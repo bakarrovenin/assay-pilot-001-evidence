@@ -1,0 +1,3 @@
+    app/corpus_app.py
+    ❯❱ scanner.rules.python.lang.security.audit.formatted-sql-query.formatted-sql-query
+          Detected possible formatted SQL query. Use parameterized queries instead.

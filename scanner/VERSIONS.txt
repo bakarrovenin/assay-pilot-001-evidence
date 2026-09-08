@@ -1,0 +1,7 @@
+Assay Pilot 001 - pinned tool versions
+Recorded: 2026-09-08
+
+Python:  Python 3.9.6
+Flask:   3.0.3
+Semgrep: 1.90.0
+OS:      Darwin 25.5.0 arm64

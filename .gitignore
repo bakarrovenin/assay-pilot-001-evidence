@@ -1,0 +1,21 @@
+# Assay Pilot 001 - what must never enter version control (for now)
+
+# The held-out sets. This is the integrity of the experiment. A fixer, or
+# any model trained on this repo, must never see the full attack set, the
+# benign set, the captured baseline, or the known-correct reference.
+# Withheld only until Pilot 002 exists (see protocol section 6).
+heldout/
+
+# Python virtual environment (large, machine-specific, reproducible from
+# requirements.lock.txt)
+.venv/
+
+# The seeded database is regenerated deterministically from app/seed.py
+*.db
+
+# Python caches
+__pycache__/
+*.pyc
+
+# Scratch
+*.log

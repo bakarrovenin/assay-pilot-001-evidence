@@ -1,0 +1,4 @@
+# Assay Pilot 001 - pinned dependencies
+# Pins are exact so anyone hostile to the result can reproduce it.
+Flask==3.0.3
+semgrep==1.90.0
