@@ -1,0 +1,152 @@
+{
+  "finding": "finding-01",
+  "tool": "fixer-01",
+  "date": "2026-09-08",
+  "scanner": "Semgrep OSS 1.90.0 (vendored CWE-89 rule)",
+  "patch_file": "patches/finding-01/fixer-01.py",
+  "checks": {
+    "A_alert_closed": {
+      "pass": true,
+      "semgrep_findings_after": 0
+    },
+    "B_hole_shut": {
+      "pass": true,
+      "attacks_fired": 12,
+      "successful_attacks": 0,
+      "detail": [
+        {
+          "id": "a02",
+          "class": "boolean",
+          "succeeded": false
+        },
+        {
+          "id": "a03",
+          "class": "boolean",
+          "succeeded": false
+        },
+        {
+          "id": "a04",
+          "class": "boolean",
+          "succeeded": false
+        },
+        {
+          "id": "a05",
+          "class": "boolean",
+          "succeeded": false
+        },
+        {
+          "id": "a06",
+          "class": "boolean",
+          "succeeded": false
+        },
+        {
+          "id": "a07",
+          "class": "union",
+          "succeeded": false
+        },
+        {
+          "id": "a08",
+          "class": "union",
+          "succeeded": false
+        },
+        {
+          "id": "a09",
+          "class": "union",
+          "succeeded": false
+        },
+        {
+          "id": "a10",
+          "class": "schema-disclosure",
+          "succeeded": false
+        },
+        {
+          "id": "a11",
+          "class": "schema-disclosure",
+          "succeeded": false
+        },
+        {
+          "id": "a12",
+          "class": "union",
+          "succeeded": false
+        },
+        {
+          "id": "a13",
+          "class": "boolean",
+          "succeeded": false
+        }
+      ],
+      "successful_ids": []
+    },
+    "C_behaviour_preserved": {
+      "pass": true,
+      "benign_fired": 14,
+      "regressions": 0,
+      "detail": [
+        {
+          "id": "b01",
+          "regression": false
+        },
+        {
+          "id": "b02",
+          "regression": false
+        },
+        {
+          "id": "b03",
+          "regression": false
+        },
+        {
+          "id": "b04",
+          "regression": false
+        },
+        {
+          "id": "b05",
+          "regression": false
+        },
+        {
+          "id": "b06",
+          "regression": false
+        },
+        {
+          "id": "b07",
+          "regression": false
+        },
+        {
+          "id": "b08",
+          "regression": false
+        },
+        {
+          "id": "b09",
+          "regression": false
+        },
+        {
+          "id": "b10",
+          "regression": false
+        },
+        {
+          "id": "b11",
+          "regression": false
+        },
+        {
+          "id": "b12",
+          "regression": false
+        },
+        {
+          "id": "b13",
+          "regression": false
+        },
+        {
+          "id": "b14",
+          "regression": false
+        }
+      ],
+      "regressed_ids": []
+    },
+    "D_no_suppression": {
+      "pass": true,
+      "explicit_markers": [],
+      "suppression_in_effect": false
+    }
+  },
+  "failure_class": "correct",
+  "verdict": "VERIFIED"
+}

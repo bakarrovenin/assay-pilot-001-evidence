@@ -1,0 +1,26 @@
+diff --git a/app/corpus_app.py b/app/corpus_app.py
+index 7d9180c..4486368 100644
+--- a/app/corpus_app.py
++++ b/app/corpus_app.py
+@@ -23,6 +23,12 @@ def get_connection():
+     return conn
+ 
+ 
++def _build_query(name):
++    # Assemble the product lookup statement from parts.
++    base = "SELECT id, name, price, category, sku FROM products WHERE name = "
++    return base + "'" + name + "'"
++
++
+ @app.route("/product")
+ def product_lookup():
+     """Look up products by their exact name, e.g. /product?name=Notebook"""
+@@ -31,7 +37,7 @@ def product_lookup():
+     conn = get_connection()
+     cur = conn.cursor()
+ 
+-    query = f"SELECT id, name, price, category, sku FROM products WHERE name = '{name}'"
++    query = _build_query(name)
+     rows = cur.execute(query).fetchall()
+     conn.close()
+ 

@@ -1,0 +1,21 @@
+diff --git a/app/corpus_app.py b/app/corpus_app.py
+index 7d9180c..579a411 100644
+--- a/app/corpus_app.py
++++ b/app/corpus_app.py
+@@ -23,10 +23,16 @@ def get_connection():
+     return conn
+ 
+ 
++def _sanitize(value):
++    # Escape single quotes to neutralize the ' OR '1'='1 payload.
++    return value.replace("'", "\\'")
++
++
+ @app.route("/product")
+ def product_lookup():
+     """Look up products by their exact name, e.g. /product?name=Notebook"""
+     name = request.args.get("name", "")
++    name = _sanitize(name)
+ 
+     conn = get_connection()
+     cur = conn.cursor()
