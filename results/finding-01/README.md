@@ -23,3 +23,14 @@ Reproduce:
   python manual_score.py patches/finding-01/fixer-01.py fixer-01
   python manual_score.py patches/finding-01/fixer-02.py fixer-02
   python manual_score.py patches/finding-01/fixer-03.py fixer-03
+
+These re-run against the live held-out sets and overwrite the files in this
+directory with the date of the new run. To confirm the artifacts here are
+reproduced byte for byte, without touching them, run:
+
+  python tools/verify_stage1_parity.py
+
+That re-scores all three patches into a scratch directory with the original
+run date pinned and compares SHA-256 of every artifact, published and
+held-out, against the committed one. It is also the proof that the Stage 1
+restructuring of the corpus did not change how Finding 1 scores.

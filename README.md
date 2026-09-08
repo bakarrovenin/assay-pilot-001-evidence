@@ -119,8 +119,14 @@ Setup:
 **What you cannot reproduce from this repository alone:** Checks B and C, and
 therefore a full run of `manual_score.py`. Those checks read the held-out
 attack set, the benign set, and the captured baseline, which are not published
-(see below). The scorer is included so you can read exactly how B, C, and D
-work and audit the logic, but it will not find the held-out files.
+(see below). Run the scorer without them and it prints INSUFFICIENT EVIDENCE
+and the list of files it could not find, rather than a verdict. The scorer is
+included so you can read exactly how B, C, and D work and audit the logic.
+
+Re-running the scorer records the date it ran, so the artifact it writes will
+differ from the committed one in the `date` field and nowhere else. Pass
+`--run-date 2026-09-08` to reproduce a committed artifact byte for byte, and
+`--output-root` to write somewhere other than the repository.
 
 ## Why the held-out sets are withheld
 
@@ -148,10 +154,13 @@ legible without the payloads.
 ## Repository layout
 
     app/                  the vulnerable Flask app and its seeder
+    corpus/               the corpus manifest, one entry per finding
+    harness/              the scoring core, driven by the manifest
+    tools/                the parity proof and the held-out leak guard
     scanner/              pinned Semgrep finding (SARIF), vendored rule, versions
     patches/finding-01/   the three scored patches and their diffs
     results/finding-01/   the published verdicts and evidence (no raw payloads)
-    manual_score.py       the by-hand scorer for the four checks
+    manual_score.py       command line scorer, one patch against one finding
     METHODOLOGY-NOTES.md  refinements found while running the pilot by hand
     assay-pilot-001-protocol.md   the governing protocol
 

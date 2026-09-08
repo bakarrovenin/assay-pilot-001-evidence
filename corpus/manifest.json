@@ -1,0 +1,182 @@
+{
+  "pilot": "assay-pilot-001",
+  "schema_version": 1,
+  "note": "One entry per finding. Entries with status 'built' can be scored. Entries with status 'planned' are structural placeholders for the fifteen shapes required by protocol section 1; the harness refuses to score them. This public manifest carries identity, location, shape and the plumbing check A needs. The known correct fix, the endpoint wiring and the attack success oracle live in the git-ignored experimenter manifest, because a public file naming the correct fix would put the answer into training data. See corpus/README.md.",
+  "defaults": {
+    "language": "python",
+    "cwe": "CWE-89",
+    "scanner": "semgrep-oss",
+    "scanner_rule": "scanner/rules/formatted-sql-query.yaml",
+    "python": ".venv/bin/python",
+    "semgrep": ".venv/bin/semgrep"
+  },
+  "findings": [
+    {
+      "id": "finding-01",
+      "status": "built",
+      "shape": "quoted-string context, single parameter",
+      "shape_key": "quoted-string-single-param",
+      "protocol_rows": "1 to 3",
+      "cwe": "CWE-89",
+      "app": {
+        "file": "app/corpus_app.py",
+        "scan_target": "app/corpus_app.py",
+        "support_files": [
+          "app/seed.py"
+        ],
+        "seed_script": "seed.py",
+        "host": "127.0.0.1",
+        "port": 5001,
+        "health_path": "/health",
+        "path_note": "Finding 1 keeps the historical filename app/corpus_app.py. Its three patch diffs are primary artifacts (protocol section 2) and are not rewritten to suit a later directory layout. Findings 2 to 15 get one module each, app/finding_NN.py."
+      },
+      "sink": {
+        "file": "app/corpus_app.py",
+        "function": "product_lookup",
+        "line_query_built": 34,
+        "line_sink": 35,
+        "note": "Line 34 builds the f-string. Line 35 is the execute() sink where Semgrep reports."
+      },
+      "heldout": {
+        "dir": "heldout/finding-01",
+        "attacks": "heldout/finding-01/attacks.json",
+        "benign": "heldout/finding-01/benign.json",
+        "baseline": "heldout/finding-01/baseline.json",
+        "reference_app": "heldout/finding-01/reference_app.py",
+        "experimenter_notes": "heldout/finding-01/MANIFEST.md",
+        "attack_count": 13,
+        "benign_count": 14
+      },
+      "reported_payload_file": "reported/finding-01-reported-payload.txt",
+      "results_dir": "results/finding-01",
+      "patches_dir": "patches/finding-01"
+    },
+    {
+      "id": "finding-02",
+      "status": "planned",
+      "shape": "quoted-string context, single parameter",
+      "shape_key": "quoted-string-single-param",
+      "protocol_rows": "1 to 3",
+      "cwe": "CWE-89",
+      "why": "The baseline case. Every tool should get these."
+    },
+    {
+      "id": "finding-03",
+      "status": "planned",
+      "shape": "quoted-string context, single parameter",
+      "shape_key": "quoted-string-single-param",
+      "protocol_rows": "1 to 3",
+      "cwe": "CWE-89",
+      "why": "The baseline case. Every tool should get these."
+    },
+    {
+      "id": "finding-04",
+      "status": "planned",
+      "shape": "numeric context, no quotes in the query at all",
+      "shape_key": "numeric-context",
+      "protocol_rows": "4 to 5",
+      "cwe": "CWE-89",
+      "why": "Any patch that escapes or strips quotes does nothing here."
+    },
+    {
+      "id": "finding-05",
+      "status": "planned",
+      "shape": "numeric context, no quotes in the query at all",
+      "shape_key": "numeric-context",
+      "protocol_rows": "4 to 5",
+      "cwe": "CWE-89",
+      "why": "Any patch that escapes or strips quotes does nothing here."
+    },
+    {
+      "id": "finding-06",
+      "status": "planned",
+      "shape": "LIKE clause with wildcards",
+      "shape_key": "like-wildcard",
+      "protocol_rows": "6 to 7",
+      "cwe": "CWE-89",
+      "why": "Escaping rules differ, naive patches break search."
+    },
+    {
+      "id": "finding-07",
+      "status": "planned",
+      "shape": "LIKE clause with wildcards",
+      "shape_key": "like-wildcard",
+      "protocol_rows": "6 to 7",
+      "cwe": "CWE-89",
+      "why": "Escaping rules differ, naive patches break search."
+    },
+    {
+      "id": "finding-08",
+      "status": "planned",
+      "shape": "ORDER BY or column name interpolation",
+      "shape_key": "identifier-interpolation",
+      "protocol_rows": "8 to 9",
+      "cwe": "CWE-89",
+      "why": "Cannot be parameterised. Requires an allowlist. Tests whether the tool knows the difference."
+    },
+    {
+      "id": "finding-09",
+      "status": "planned",
+      "shape": "ORDER BY or column name interpolation",
+      "shape_key": "identifier-interpolation",
+      "protocol_rows": "8 to 9",
+      "cwe": "CWE-89",
+      "why": "Cannot be parameterised. Requires an allowlist. Tests whether the tool knows the difference."
+    },
+    {
+      "id": "finding-10",
+      "status": "planned",
+      "shape": "multiple parameters, only one tainted",
+      "shape_key": "multi-param-single-taint",
+      "protocol_rows": "10 to 11",
+      "cwe": "CWE-89",
+      "why": "Tests whether the fix is targeted or scattershot."
+    },
+    {
+      "id": "finding-11",
+      "status": "planned",
+      "shape": "multiple parameters, only one tainted",
+      "shape_key": "multi-param-single-taint",
+      "protocol_rows": "10 to 11",
+      "cwe": "CWE-89",
+      "why": "Tests whether the fix is targeted or scattershot."
+    },
+    {
+      "id": "finding-12",
+      "status": "planned",
+      "shape": "ORM raw query escape hatch",
+      "shape_key": "orm-raw-query",
+      "protocol_rows": "12",
+      "cwe": "CWE-89",
+      "why": "Realistic. Looks safe because an ORM is present."
+    },
+    {
+      "id": "finding-13",
+      "status": "planned",
+      "shape": "second order: input stored, then used in a later query",
+      "shape_key": "second-order",
+      "protocol_rows": "13 to 14",
+      "cwe": "CWE-89",
+      "why": "The reported sink and the vulnerable sink are in different functions."
+    },
+    {
+      "id": "finding-14",
+      "status": "planned",
+      "shape": "second order: input stored, then used in a later query",
+      "shape_key": "second-order",
+      "protocol_rows": "13 to 14",
+      "cwe": "CWE-89",
+      "why": "The reported sink and the vulnerable sink are in different functions."
+    },
+    {
+      "id": "finding-15",
+      "status": "planned",
+      "shape": "input reaching the query through two hops of helper functions",
+      "shape_key": "multi-hop-taint",
+      "protocol_rows": "15",
+      "cwe": "CWE-89",
+      "why": "Tests whether the tool traces the taint or pattern matches the line."
+    }
+  ],
+  "experimenter_manifest": "heldout/corpus/experimenter.json"
+}
