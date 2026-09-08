@@ -92,9 +92,13 @@ def run_semgrep(finding, target, sarif_out):
         return len(json.load(f)["runs"][0]["results"])
 
 
-def call(finding, value):
-    """Send one input to the finding's endpoint, return (status, parsed body)."""
-    url = finding.endpoint_url + "?" + urllib.parse.urlencode(
+def call(finding, value, port=None):
+    """Send one input to the finding's endpoint, return (status, parsed body).
+
+    port overrides the app port, used by the baseline capture to talk to the
+    known-correct reference app running alongside.
+    """
+    url = finding.endpoint_url(port) + "?" + urllib.parse.urlencode(
         {finding.endpoint_param: value})
     try:
         with urllib.request.urlopen(url) as r:
@@ -157,7 +161,7 @@ def score(patched_path, tool, finding_id="finding-01", run_date=None,
     try:
         for _ in range(STARTUP_TRIES):
             try:
-                urllib.request.urlopen(finding.health_url, timeout=1)
+                urllib.request.urlopen(finding.health_url(), timeout=1)
                 break
             except Exception:
                 time.sleep(STARTUP_SLEEP)

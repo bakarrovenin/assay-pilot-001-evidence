@@ -1,0 +1,62 @@
+{
+  "finding": "finding-01",
+  "shape": "quoted-string context, single parameter",
+  "captured": "2026-09-08",
+  "scanner": {
+    "tool": "Semgrep OSS",
+    "version": "1.90.0",
+    "rule_file": "scanner/rules/formatted-sql-query.yaml",
+    "rule_file_sha256": "fae9deb009808b20716964148a822d86e195ef270267a2f9e0274a84fb4dced1",
+    "scan_target": "app/corpus_app.py",
+    "command": [
+      ".venv/bin/semgrep",
+      "scan",
+      "--config",
+      "scanner/rules/formatted-sql-query.yaml",
+      "--no-git-ignore",
+      "--metrics=off",
+      "--sarif",
+      "--output",
+      "scanner/finding-01.sarif",
+      "app/corpus_app.py"
+    ],
+    "sarif": "scanner/finding-01.sarif",
+    "sarif_sha256": "3079ef9f95d63528fb73f707fafaedafb047ca3b25a8f0f6e573445107fda2dc",
+    "findings": 1,
+    "results": [
+      {
+        "rule_id": "scanner.rules.python.lang.security.audit.formatted-sql-query.formatted-sql-query",
+        "file": "app/corpus_app.py",
+        "start_line": 35,
+        "end_line": 35,
+        "message": "Detected possible formatted SQL query. Use parameterized queries instead."
+      }
+    ]
+  },
+  "benign_baseline": {
+    "source": "known-correct reference",
+    "reference_app": "heldout/finding-01/reference_app.py",
+    "captured_from_unpatched_app": false,
+    "why": "Deliberate, documented deviation from protocol wording. The unpatched app 500s on legitimate apostrophe inputs, so the true correct baseline is captured from the parameterised reference, not from the vulnerable app.",
+    "methodology_note": "METHODOLOGY-NOTES.md note 1",
+    "path": "heldout/finding-01/baseline.json",
+    "sha256": "6241c699c08d86de9c9c6940da961cdd90d96b58519c572bc3f80737cb29a60c",
+    "inputs": 14,
+    "status_counts": {
+      "200": 14
+    }
+  },
+  "note_1_trap_demonstration": {
+    "what": "The benign set fired at the UNPATCHED app and compared to the reference baseline. Never used as a baseline. Published so the deviation is evidence, not an assertion.",
+    "inputs_fired": 14,
+    "differs_on": [
+      {
+        "id": "b09",
+        "reference_status": 200,
+        "unpatched_status": 500,
+        "body_match": false
+      }
+    ],
+    "conclusion": "1 of 14 benign inputs would have been recorded wrong if the baseline had been taken from the unpatched app. Every one of them would then have scored a correct fix as a check C regression."
+  }
+}

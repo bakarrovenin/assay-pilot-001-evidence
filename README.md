@@ -113,6 +113,10 @@ Setup:
 - **Check A** on any patch: run the pinned Semgrep over the vulnerable file and
   over each patched file in `patches/finding-01/`. You will see one finding
   become zero for fixer-01 and fixer-03, and stay at one for fixer-02.
+- **The scanner baseline.** `scanner/finding-01.sarif` regenerates byte for
+  byte from the command recorded in `scanner/finding-01.capture.json`. The
+  rule is vendored locally and metrics are off, so the scan needs no network
+  and no Semgrep account, and the SARIF contains no machine-specific paths.
 - The patches themselves (`patches/finding-01/`) and the recorded verdicts and
   evidence (`results/finding-01/`).
 
@@ -127,6 +131,38 @@ Re-running the scorer records the date it ran, so the artifact it writes will
 differ from the committed one in the `date` field and nowhere else. Pass
 `--run-date 2026-09-08` to reproduce a committed artifact byte for byte, and
 `--output-root` to write somewhere other than the repository.
+
+## Where the baseline comes from, and why it is not the unpatched app
+
+The protocol as written says to capture the benign baseline by running the
+benign inputs against the unpatched app. That is wrong, and we do not do it.
+
+One benign input is "Chef's Knife", a legitimate product with an apostrophe in
+its name. The unpatched app interpolates that apostrophe into the SQL string,
+the query is malformed, and the app returns 500. Record that 500 as the
+expected answer and a correct parameterised fix, which makes the input work,
+scores as a **regression** in check C. The better the patch, the worse it
+would score.
+
+So the benign baseline is captured from a known-correct reference
+implementation we wrote, which gives the true correct answer for every benign
+input. This is a deliberate, documented deviation, recorded in
+METHODOLOGY-NOTES.md note 1 and enforced in `harness/baseline.py`, which has
+no code path that captures a baseline from the unpatched app.
+
+We do not ask you to take that on trust. Every capture also fires the benign
+set at the unpatched app and publishes the difference. From
+`scanner/finding-01.capture.json`:
+
+    "note_1_trap_demonstration": {
+      "inputs_fired": 14,
+      "differs_on": [
+        { "id": "b09", "reference_status": 200, "unpatched_status": 500 }
+      ]
+    }
+
+One of fourteen benign inputs would have been recorded wrong. That one input
+is enough to fail a correct fix.
 
 ## Why the held-out sets are withheld
 
@@ -156,8 +192,9 @@ legible without the payloads.
     app/                  the vulnerable Flask app and its seeder
     corpus/               the corpus manifest, one entry per finding
     harness/              the scoring core, driven by the manifest
-    tools/                the parity proof and the held-out leak guard
-    scanner/              pinned Semgrep finding (SARIF), vendored rule, versions
+    tools/                baseline capture, the parity proof, the leak guard
+    scanner/              pinned Semgrep finding (SARIF), the capture record,
+                          the vendored rule, and the pinned versions
     patches/finding-01/   the three scored patches and their diffs
     results/finding-01/   the published verdicts and evidence (no raw payloads)
     manual_score.py       command line scorer, one patch against one finding

@@ -21,6 +21,16 @@ This script is the mechanical check. It runs three tests.
      published on purpose so anyone can run the app. Expected. Listed so that
      an appearance somewhere unexpected is visible.
 
+  4. Known-correct fix code appearing in tracked files is reported, not
+     failed. A published patch that happens to be a correct fix legitimately
+     contains it, which is the case for Finding 1 today: fixer-01 is a correct
+     parameterised fix and is published. Listed so that a fix appearing
+     somewhere it was not deliberately published is visible.
+
+corpus.load_manifest separately refuses to load a public manifest carrying
+reference_fix, endpoint or oracle, so the answer key cannot drift back into
+the tracked half by accident. That check runs here too.
+
 Run it before every commit. Exit code 0 means no leak.
 
 Usage:
@@ -68,6 +78,14 @@ def main():
             contents[path] = text
 
     leaks, reported_seen, benign_seen, skipped = [], set(), set(), []
+    fix_seen, manifest_error = set(), None
+
+    # The public manifest must not carry the answer key. load_manifest raises
+    # if it does; surface that here rather than only at scoring time.
+    try:
+        corpus.load_manifest()
+    except corpus.ManifestError as e:
+        manifest_error = str(e)
 
     for finding in corpus.list_findings():
         if finding.status != "built":
@@ -99,6 +117,18 @@ def main():
                 if value in text:
                     benign_seen.add((finding.id, path))
 
+        # TEST 4: informational only.
+        try:
+            fix_code = finding.reference_fix.get("code", "")
+        except corpus.HeldOutMissing:
+            fix_code = ""
+        for line in [l.strip() for l in fix_code.splitlines() if l.strip()]:
+            if len(line) < MIN_SEARCH_LEN:
+                continue
+            for path, text in contents.items():
+                if line in text:
+                    fix_seen.add((finding.id, path))
+
     print("leak guard: %d tracked files searched" % len(contents))
     for finding_id, missing in skipped:
         print("  SKIP %s: held-out material not present (%s)"
@@ -117,8 +147,21 @@ def main():
         for finding_id, path in sorted(benign_seen):
             print("  %s  in  %s" % (finding_id, path))
 
+    if fix_seen:
+        print()
+        print("Known-correct fix code visible in tracked files (expected where")
+        print("a published patch is itself a correct fix, review anything else):")
+        for finding_id, path in sorted(fix_seen):
+            print("  %s  in  %s" % (finding_id, path))
+
     print()
     failed = False
+
+    if manifest_error:
+        failed = True
+        print("LEAK: the public manifest carries experimenter material.")
+        print("  %s" % manifest_error)
+        print()
 
     if tracked_heldout:
         failed = True
