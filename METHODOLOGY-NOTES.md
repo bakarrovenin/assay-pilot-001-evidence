@@ -120,17 +120,86 @@ comparison should be run again rather than assumed.
 
 ### A silent failure this stage removed
 
-Writing the container path exposed a real hole in the scorer, and it is worth
-recording because it failed in the flattering direction.
+Writing the container path exposed a hole in check B: a patch whose app never
+started scored as a patch that shut the hole. It is recorded on its own in
+note 4, because it belongs to a pattern rather than to this stage.
 
-Check B judges each attack by whether the response leaked data. If the patched
-app never started, every attack would fail to connect, every one would be
-recorded as "did not succeed", and check B would pass. A patch that does not
-even import would have scored as a patch that shut the hole.
+## Note 4: Check B passed a patch whose app never started, and the third false pass in a row is a pattern
+
+Found while containerising the scorer for stage 3.
+
+Check B fires every held-out attack at the patched app and judges each one by
+whether the response leaked data. The judgement is made on the response. There
+was no check that a response was ever possible.
+
+So if the patched app failed to start, every attack failed to connect. Every
+failed connection was recorded as "did not succeed". Zero successful attacks
+is exactly what a correct fix looks like, so check B passed. A patch that did
+not even import scored as a patch that shut the hole.
+
+### It failed in the flattering direction
+
+This is the part worth dwelling on, and the reason it survived the manual run,
+stage 1 and stage 2 without anyone noticing.
+
+A bug that made check B report attacks succeeding against a correct patch
+would have been found the first afternoon. Someone would have gone looking,
+because the result would have been an accusation and accusations get checked.
+This bug did the opposite. It produced a clean pass, and a clean pass is the
+answer nobody interrogates. The evidence artifact looked healthy: twelve
+attacks fired, zero succeeded, check B green.
+
+The failure mode of a broken oracle is not noise. It is agreement.
+
+### How it is closed
 
 The scorer now raises when the app never answers /health, and the caller
-reports INSUFFICIENT EVIDENCE. Protocol section 3 already called for that
-("the app would not build"); the code simply did not implement it. Every way a
-run can fail to produce a verdict is now provoked on purpose in
-tools/verify_insufficient_evidence.py, because a state that is never exercised
-is a state we cannot claim works.
+reports INSUFFICIENT EVIDENCE with the reason recorded. Protocol section 3
+already called for exactly this, "the app would not build"; the code simply
+never implemented it, and nothing tested for it.
+
+Fixing the code is the smaller half. The larger half is that every way a run
+can fail to produce a verdict is now provoked on purpose, in
+tools/verify_insufficient_evidence.py: a diff that will not apply, a patch
+that raises on import, a container that can reach the network, and held-out
+material that is absent. Each one has to name itself. A state that is never
+exercised is a state we cannot claim works, and INSUFFICIENT EVIDENCE is the
+state most likely to rot unnoticed precisely because nobody wants it.
+
+### Three for three
+
+This is the third time our own method has produced a false pass.
+
+  1. **Check D's blind spot** (note 2). fixer-03 rewrote the query into a
+     shape the Semgrep rule does not match. Check A went green, check D found
+     no suppression marker, and all twelve held-out attacks still leaked
+     including the password hashes. Two of the four checks a normal team runs
+     reported clean on a fully exploitable patch.
+
+  2. **The answer key in the public manifest** (stage 2, recorded in the
+     Stage 2 commit and corpus/README.md rather than as a numbered note). The
+     public manifest carried the known correct fix for every finding. For the
+     second order and multi-hop shapes the correct fix IS the answer, so a
+     tracked public file naming it would have put the answer into every future
+     training run and turned a real failure into a fake pass.
+
+  3. **This one.** Check B could not tell a shut hole from an app that never
+     ran.
+
+Each one silenced a signal rather than inventing one. Each produced a green
+result that was easier to believe than to check. That is the same shape as the
+thing this pilot exists to catch in other people's tooling: the alert closed,
+the dashboard went green, and the vulnerability was untouched.
+
+We do not get to describe that failure mode in vendors and treat our own
+instances of it as unrelated bugs. The honest reading is that a measurement
+system biased toward clean results will drift toward producing them, ours
+included, and the only defence that has actually worked here is the one the
+protocol already names: an independent signal the method cannot silence.
+Check B caught the check D blind spot. The held-out sets caught the answer
+key. Deliberately provoking the failure paths caught this.
+
+Stated as a limitation rather than a boast: three found does not mean three
+existed. It means three were found, by an experiment that has so far scored
+three patches against one finding in the easiest shape. The count of false
+passes we have not yet found is unknown and is not zero.
