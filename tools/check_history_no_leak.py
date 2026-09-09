@@ -38,6 +38,19 @@ exits non-zero and says so rather than reporting a clean history it never
 inspected. A guard that passes because it had nothing to compare against is
 the failure mode this repository keeps finding in itself.
 
+## It is checked in both directions
+
+A guard that has only ever reported NO LEAK has not been tested.
+tools/verify_history_guard.py builds a throwaway repository carrying a known
+leak, runs this guard over it, and requires it to fail; then cleans the leak in
+a later commit, leaving the blob in the history, and requires it to fail again.
+That second case is the one that matters, and it is the exact mistake recorded
+in METHODOLOGY-NOTES.md note 6.
+
+The fixture is built at run time from the git-ignored held-out material and
+deleted afterwards. It is never committed, because a committed fixture
+carrying the answer key would be the leak it is testing for.
+
 Usage:
   python tools/check_history_no_leak.py                # what a push would send
   python tools/check_history_no_leak.py --range HEAD   # the entire history
@@ -57,12 +70,19 @@ from harness import corpus
 ROOT = corpus.ROOT
 EXPERIMENTER = os.path.join(ROOT, "heldout", "corpus", "experimenter.json")
 
+# Which repository's objects to search. This one, unless --repo says otherwise.
+# tools/verify_history_guard.py points it at a throwaway fixture carrying a
+# known leak, so the guard is exercised in the direction that fails as well as
+# the one that passes. The needles always come from EXPERIMENTER here, never
+# from the repository being searched.
+REPO = ROOT
+
 # Fields that mean a manifest blob is carrying the answer key.
 ANSWER_KEY_FIELDS = ("reference_fix", "endpoint", "oracle")
 
 
 def git(*args, binary=False):
-    out = subprocess.run(["git"] + list(args), cwd=ROOT,
+    out = subprocess.run(["git"] + list(args), cwd=REPO,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.DEVNULL).stdout
     return out if binary else out.decode(errors="replace")
@@ -134,7 +154,7 @@ def blobs_in(rev_range):
     if not listing:
         return []
     paths = {o[0]: (o[1] if len(o) > 1 else "") for o in listing}
-    check = subprocess.run(["git", "cat-file", "--batch-check"], cwd=ROOT,
+    check = subprocess.run(["git", "cat-file", "--batch-check"], cwd=REPO,
                            input="\n".join(paths).encode(),
                            stdout=subprocess.PIPE).stdout.decode()
     out = []
@@ -151,7 +171,15 @@ def main():
     p.add_argument("--range", dest="rev_range", default="origin/main..HEAD",
                    help="commit range to scan (default: what a push would "
                         "send). Pass HEAD to scan the entire history.")
+    p.add_argument("--repo", default=None,
+                   help="repository to search (default: this one). Used by "
+                        "tools/verify_history_guard.py to run the guard "
+                        "against a fixture with a known leak.")
     args = p.parse_args()
+
+    global REPO
+    if args.repo:
+        REPO = os.path.abspath(args.repo)
 
     if not os.path.exists(EXPERIMENTER):
         print("cannot check: the held-out material is not on this machine.")

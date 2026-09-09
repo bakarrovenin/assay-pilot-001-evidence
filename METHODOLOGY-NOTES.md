@@ -351,3 +351,97 @@ The honest version of this note is that the check existed as a thing somebody
 remembered to ask for, once, at the right moment. That is not a control. It is
 luck with a good outcome, and the difference between the two is exactly what
 this pilot is trying to measure in other people's tooling.
+
+## Note 7: two of these notes claimed a verification that did not exist in code
+
+Found on 2026-09-09 while writing the harness section for the Assay website,
+by tracing every claim intended for publication back to the code that was
+supposed to support it. Two did not arrive.
+
+Note 5 ends: "The check is verified against a deliberately corrupted summary,
+because a check that has only ever passed has not been tested."
+tools/verify_report_math.py contained no such test. It recounted the published
+summary from the per-cell artifacts, compared, and reported. There was no
+corrupted input anywhere in the repository, and a search for one returned that
+sentence and nothing else.
+
+Note 6 ends its account of the history guard: "It is checked against the
+pre-rewrite history, where it finds the leak, as well as the rewritten one,
+where it does not." That was a true account of something done once by hand,
+at the moment the leak was found. Nothing in the repository re-ran it, and
+nothing would have noticed when it stopped being true.
+
+### The failure is in the record, not in the numbers
+
+Worth separating, because the instinct is to file this next to the others and
+it does not sit there cleanly. Notes 2, 4 and 6 are all cases where a check
+returned a green result it had not earned. Here every number is correct. The
+rates in results/summary.json match an independent count, and the history was
+in fact clean at the first push.
+
+What was wrong was the description of how thoroughly those things had been
+checked. For a project whose entire output is a description of verification
+that other people are asked to trust, that is not a lesser category of
+mistake. A reader deciding whether to believe our numbers reads these notes.
+Two of the assurances they offer were, at the time of reading, unfounded.
+
+### Same shape as the rest
+
+  note 2  the alert closed because the scanner did not match the new shape
+  note 4  check B recorded zero successful attacks because the app never ran
+  note 6  the leak guard found nothing because it searched the working tree
+  note 7  the notes described a test because someone wrote that it existed
+
+Each of these reads as true and costs nothing to accept. The sentence in note
+5 is exactly the sentence a careful project would write, which is why it
+survived being written, reviewed and published. It described the right test.
+It just did not cause it.
+
+### How it is closed
+
+Both claims are now executable, and the tests, not the prose, are the record.
+
+tools/verify_report_math.py builds fourteen deliberately corrupted summaries
+in memory, one per branch of the comparison, and requires the recount to
+report every one and to name the field that moved. A corruption that is caught
+for the wrong reason counts as missed, the same standard
+tools/verify_insufficient_evidence.py already holds the scorer to. The control
+runs before the real recount and the script exits 2 if any corruption survives,
+so a comparison that has lost the ability to fail cannot go on to report a
+clean summary. The corruptions run in both directions and are labelled, because
+the flattering ones are the ones that would survive review: a verified-fix rate
+that came out too high reads as a finding rather than as a bug.
+
+tools/verify_history_guard.py runs the history guard over four repositories: a
+fixture with the answer key in the working tree, the same fixture with it
+deleted in a later commit and the blob still reachable, a clean fixture, and,
+while it lasts, the genuine Stage 1 commit that carried the answer key, which
+is still in this clone's object store because nothing references it. The second
+case is the one that matters, because tools/check_no_leak.py passes on it. The
+guard has to fail on it anyway. tools/check_history_no_leak.py gained --repo to
+make this possible.
+
+The fixtures are built at run time from the git-ignored held-out material and
+deleted when the run ends. They are not committed, for the same reason the
+history was rewritten in the first place: a committed fixture carrying the
+answer key would be the leak it is testing for. On a machine without heldout/
+both scripts refuse to run rather than reporting a guard they never exercised.
+
+### What is still not closed
+
+The commit-object case dies whenever git collects the object, and then the
+guard is checked against a reconstruction rather than the genuine article. The
+script says so instead of quietly dropping to three cases.
+
+The correction was verified on a machine with no container runtime, so
+tools/verify_stage3_parity.py and tools/verify_insufficient_evidence.py were
+not re-run as part of it. Both refuse to report a result without a daemon,
+which is the correct behaviour and is not the same as having passed.
+
+The larger gap is the one that produced this note. There is no check that a
+claim in this file corresponds to code, and the two that did not were found by
+a person reading prose against source with publication as the deadline. Every
+other note here ends by pointing at a mechanism that replaced somebody
+remembering. This one cannot, yet. Until it can, the honest statement is that
+the notes are the least verified artifact in this repository, and they are the
+part a reader is most likely to take on trust.

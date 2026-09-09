@@ -332,7 +332,8 @@ legible without the payloads.
     harness/              the scoring core, driven by the manifest
     container/            the scoring image and the script it runs inside it
     tools/                baseline capture, the parity proofs, the two leak
-                          guards, the insufficient-evidence checks
+                          guards and the check that the history guard fails on
+                          a known leak, the insufficient-evidence checks
     scanner/              pinned Semgrep finding (SARIF), the capture record,
                           the vendored rule, and the pinned versions
     patches/finding-01/   the three scored patches and their diffs
