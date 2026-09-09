@@ -272,3 +272,82 @@ worst possible reason to trust it.
 
 The check is verified against a deliberately corrupted summary, because a
 check that has only ever passed has not been tested.
+
+## Note 6: the leak guard searched the working tree, and the answer key was in the history
+
+Found immediately before the first push of this repository, by running a check
+that had not been run since the repository was created.
+
+Stage 2 split the answer key out of the public manifest: the known correct
+fix, the endpoint wiring and the attack success oracle moved to a git-ignored
+experimenter file, and corpus.load_manifest was taught to refuse a public
+manifest that carries them. That worked. The file on disk was clean and stayed
+clean.
+
+It was clean going forward. The Stage 1 commit still contained the manifest as
+it was before the split, answer key included, and that blob was part of the
+history waiting to be pushed.
+
+### The check answered a different question than the one being asked
+
+tools/check_no_leak.py searches every tracked file. It reported NO LEAK, and
+it was right: no tracked file contained held-out material. Asked before a
+push, the question is not "is the working tree clean" but "is the history
+clean", and those come apart the moment a file is cleaned in a later commit
+rather than never written.
+
+A git object survives the file that referenced it. Once pushed, that blob is
+fetchable by its SHA forever, whether or not any commit still points at it,
+and no later deletion reaches it.
+
+So the guard passed for a reason that had nothing to do with the thing being
+true. That is the same shape as every other note here:
+
+  note 2  the alert closed because the scanner did not match the new shape,
+          not because the query was safe
+  note 4  check B recorded zero successful attacks because the app never
+          started, not because the hole was shut
+  note 6  the leak guard found nothing because it was looking at the working
+          tree, not because the history was clean
+
+Three different checks, three passes that were not earned, one pattern. The
+check was sound; its scope was not, and nothing in the harness said so.
+
+### What it would have cost
+
+The exposed material was the finding-01 attack success oracle: that a boolean
+attack is judged by a row count above one, and that union and schema attacks
+are judged by the marker strings "hash_", "@example.com", "CREATE TABLE" and
+"users".
+
+That is the detector, not the answer. The correct fix for finding-01 is
+already published on purpose, in README.md and patches/finding-01/, and we do
+not retract it. The oracle is different in kind. A patch that returned a
+single row and avoided five strings would pass check B with the hole wide
+open, and it would pass using criteria we published ourselves. The fake pass
+would have been built out of our own measuring instrument.
+
+### Fixed structurally, not by remembering
+
+The Stage 1 commit was rewritten before publication so the answer key never
+enters public history, and the split is present from the first published
+commit. That was possible only because nothing had been pushed yet. After a
+push it would not have been fixable at all, which is the whole reason this
+class of mistake deserves a gate rather than good intentions.
+
+The gate is tools/check_history_no_leak.py. It reads the git objects rather
+than the working tree, over the range a push would actually send, and fails on
+a held-out payload, on the distinctive prose of the experimenter manifest, on
+any blob that parses as a manifest carrying reference_fix, endpoint or oracle,
+and on any object path under heldout/. It refuses to pass when the held-out
+material is absent, because a guard with nothing to search for has not
+verified anything.
+
+It is checked against the pre-rewrite history, where it finds the leak, as
+well as the rewritten one, where it does not. A guard that has only ever
+passed has not been tested.
+
+The honest version of this note is that the check existed as a thing somebody
+remembered to ask for, once, at the right moment. That is not a control. It is
+luck with a good outcome, and the difference between the two is exactly what
+this pilot is trying to measure in other people's tooling.

@@ -137,6 +137,7 @@ produced from.
     python tools/verify_insufficient_evidence.py  # every failure path reports itself
     python tools/verify_report_math.py            # published rates match the artifacts
     python tools/check_no_leak.py                 # no held-out payload in a tracked file
+    python tools/check_history_no_leak.py         # nor in any blob the history carries
 
 `verify_stage3_parity.py` re-scores all three Finding 1 patches in the
 container and byte-compares every artifact against the committed ones, scores
@@ -150,6 +151,13 @@ a verdict and requires the scorer to name it. That list includes a patch that
 does not import, which before stage 3 would have scored as a patch that shut
 the hole, because every attack failing to connect reads exactly like every
 attack being blocked. See METHODOLOGY-NOTES.md note 4.
+
+`check_history_no_leak.py` reads the git objects rather than the working tree.
+The two leak guards answer different questions, and the difference matters: a
+file can carry a secret in one commit and be cleaned in the next, leaving the
+tracked-file guard correctly reporting nothing while the earlier blob stays
+fetchable by SHA forever. That is not hypothetical, it is why the file exists.
+See METHODOLOGY-NOTES.md note 6.
 
 `verify_report_math.py` recounts every published rate from the per-cell
 evidence files, using plain counting and division and nothing from the
@@ -323,8 +331,8 @@ legible without the payloads.
     corpus/               the corpus manifest, one entry per finding
     harness/              the scoring core, driven by the manifest
     container/            the scoring image and the script it runs inside it
-    tools/                baseline capture, the parity proofs, the leak guard,
-                          the insufficient-evidence checks
+    tools/                baseline capture, the parity proofs, the two leak
+                          guards, the insufficient-evidence checks
     scanner/              pinned Semgrep finding (SARIF), the capture record,
                           the vendored rule, and the pinned versions
     patches/finding-01/   the three scored patches and their diffs
