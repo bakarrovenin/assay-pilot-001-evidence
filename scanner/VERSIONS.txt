@@ -5,3 +5,22 @@ Python:  Python 3.9.6
 Flask:   3.0.3
 Semgrep: 1.90.0
 OS:      Darwin 25.5.0 arm64
+
+Stage 3 scoring container
+Recorded: 2026-09-09
+
+Base image:  python@sha256:a02e9c5406c416c504d6c9a1a306ff4080c3173f1008d192f953bd20382a2d5c
+             (python:3.9-slim-bookworm, pinned by digest)
+Image:       assay-pilot-001/scorer:1
+Python:      3.9.25
+SQLite:      3.40.1
+Semgrep:     1.90.0
+Platform:    Linux aarch64, glibc 2.36
+Isolation:   docker --network none, no bind mounts, container removed after
+             each patch. Measured from inside the container and recorded per
+             run in results/finding-01/<tool>.provenance.json.
+
+The host toolchain above (Python 3.9.6, SQLite 3.51.0, macOS) is the machine
+the committed evidence was captured on. The container differs on both SQLite
+and Python patch level, and every artifact still matched byte for byte. See
+METHODOLOGY-NOTES.md note 3.

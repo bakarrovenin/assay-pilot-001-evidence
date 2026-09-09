@@ -53,6 +53,12 @@ def main():
               "baseline. They are git-ignored and not published until Pilot "
               "002 exists (protocol section 6).")
         sys.exit(3)
+    except scoring.AppDidNotStart as e:
+        print("INSUFFICIENT EVIDENCE: %s" % e)
+        print("Checks B and C fire at a running app. If it never started, "
+              "every attack would fail to connect and check B would report a "
+              "shut hole. A patch that does not run has not been tested.")
+        sys.exit(3)
     except corpus.ManifestError as e:
         print("manifest error: %s" % e)
         sys.exit(2)

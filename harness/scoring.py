@@ -49,6 +49,23 @@ from harness.oracle import attack_succeeded
 
 ROOT = corpus.ROOT
 
+
+class AppDidNotStart(Exception):
+    """The patched app never answered /health, so B and C never really ran.
+
+    Without this the scorer had a silent failure mode. If the app failed to
+    boot, every attack in check B would fail to connect and be recorded as
+    "did not succeed", which reads exactly like a patch that shut the hole.
+    A patch that does not run is not a patch that works. The caller turns
+    this into INSUFFICIENT EVIDENCE, which is what protocol section 3 already
+    says about an app that would not build.
+    """
+
+    def __init__(self, tries, seconds):
+        Exception.__init__(
+            self, "patched app did not answer %s after %d tries over %.1fs"
+                  % ("/health", tries, seconds))
+
 # A patch that adds any of these to the diff has silenced the tool rather than
 # fixed the code. Explicit-marker half of check D.
 SUPPRESSION_MARKERS = ["# nosec", "#nosec", "# noqa", "nosemgrep",
@@ -120,7 +137,7 @@ def added_lines(finding, patched_path):
 
 
 def score(patched_path, tool, finding_id="finding-01", run_date=None,
-          output_root=None):
+          output_root=None, patch_file_label=None):
     """Score one patched app file against one finding. Returns the full artifact.
 
     run_date pins the date recorded in the artifact. Left unset it is today,
@@ -130,6 +147,12 @@ def score(patched_path, tool, finding_id="finding-01", run_date=None,
 
     output_root redirects both artifacts somewhere other than the repository,
     used by the parity check so it never overwrites the committed evidence.
+
+    patch_file_label is what the artifact records as the patch it scored. It
+    exists for the diff-driven path: there, patched_path is a throwaway file
+    in a clean checkout, and naming that temporary path in the evidence would
+    be both useless and different on every run. Left unset the behaviour is
+    unchanged, the path itself is recorded relative to the repository root.
     """
     finding = corpus.get_finding(finding_id)
     finding.require_heldout()
@@ -159,12 +182,16 @@ def score(patched_path, tool, finding_id="finding-01", run_date=None,
     proc = subprocess.Popen([finding.python_bin, app_basename], cwd=app_dir,
                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     try:
+        started = False
         for _ in range(STARTUP_TRIES):
             try:
                 urllib.request.urlopen(finding.health_url(), timeout=1)
+                started = True
                 break
             except Exception:
                 time.sleep(STARTUP_SLEEP)
+        if not started:
+            raise AppDidNotStart(STARTUP_TRIES, STARTUP_TRIES * STARTUP_SLEEP)
 
         # CHECK B  every held-out attack except the reported payload
         attacks = finding.held_out_attacks()
@@ -230,7 +257,7 @@ def score(patched_path, tool, finding_id="finding-01", run_date=None,
     full = {
         "finding": finding.id, "tool": tool, "date": run_date,
         "scanner": scanner_label(finding),
-        "patch_file": os.path.relpath(patched_path, ROOT),
+        "patch_file": patch_file_label or os.path.relpath(patched_path, ROOT),
         "checks": {
             "A_alert_closed": {"pass": check_a, "semgrep_findings_after": a_findings},
             "B_hole_shut": {"pass": check_b, "attacks_fired": len(b_detail),

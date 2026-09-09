@@ -87,6 +87,67 @@ patches that only close the alert.
 
 Per-patch evidence is in `results/finding-01/`.
 
+## How the scorer runs
+
+Every patch is scored inside a container with no network egress, one container
+per patch, destroyed when that patch is done. The host builds the image and
+collects the results; it never applies a patch, never starts the patched app
+and never fires an attack payload.
+
+Two things follow from that, and both are recorded rather than asserted.
+
+**No state can leak between patches.** The container is created fresh, given a
+copy of the repository, and removed with force when the run ends however it
+ends. Nothing is bind mounted, so it cannot write back to the repository even
+by accident. The patched file, the seeded database, the app process and the
+whole writable layer go with it.
+
+**The isolation is measured, not claimed.** An artifact that says "no network
+egress" because the harness passed `--network none` is a claim about a command
+line, not evidence: drop the flag and the file still says the same thing. So
+the container measures itself from the inside, before it applies a patch or
+builds a payload, and records which interfaces exist, whether a default route
+exists at all, and the result of real TCP and DNS attempts to addresses off
+the host. If any of them connects, the run is refused and reports INSUFFICIENT
+EVIDENCE without scoring anything.
+
+That measurement lives in `results/finding-01/<tool>.provenance.json`, beside
+the evidence rather than inside it. It carries the sha256 of each evidence
+file it describes, so provenance cannot be attached to evidence it does not
+belong to. The reason it is a separate file is in METHODOLOGY-NOTES.md note 3:
+the gate on this harness is that artifacts still byte compare against the ones
+committed from the manual run, and adding a field to the evidence would end
+that comparison permanently.
+
+Run it:
+
+    python score_container.py patches/finding-01/fixer-01.patch fixer-01
+
+The scorer takes a patch diff and applies it to a clean checkout. A diff that
+will not apply is INSUFFICIENT EVIDENCE, not a failed patch: nothing about the
+vulnerability was tested. Pass `--patched-file` instead to score an already
+patched file, which is the input shape the committed stage 1 evidence was
+produced from.
+
+### Checks on the harness itself
+
+    python tools/verify_stage3_parity.py          # containerisation changed nothing
+    python tools/verify_insufficient_evidence.py  # every failure path reports itself
+    python tools/check_no_leak.py                 # no held-out payload in a tracked file
+
+`verify_stage3_parity.py` re-scores all three Finding 1 patches in the
+container and byte-compares every artifact against the committed ones, scores
+each patch a second time from its diff to confirm the two input paths agree,
+and fails if any run reports egress. All three verdicts and all six artifacts
+were unchanged, on a container whose SQLite and Python builds differ from the
+machine the evidence was captured on.
+
+`verify_insufficient_evidence.py` provokes each way a run can fail to produce
+a verdict and requires the scorer to name it. That list includes a patch that
+does not import, which before stage 3 would have scored as a patch that shut
+the hole, because every attack failing to connect reads exactly like every
+attack being blocked.
+
 ## Pinned versions
 
 Numbers without pinned versions are not reproducible. Recorded in
@@ -192,12 +253,17 @@ legible without the payloads.
     app/                  the vulnerable Flask app and its seeder
     corpus/               the corpus manifest, one entry per finding
     harness/              the scoring core, driven by the manifest
-    tools/                baseline capture, the parity proof, the leak guard
+    container/            the scoring image and the script it runs inside it
+    tools/                baseline capture, the parity proofs, the leak guard,
+                          the insufficient-evidence checks
     scanner/              pinned Semgrep finding (SARIF), the capture record,
                           the vendored rule, and the pinned versions
     patches/finding-01/   the three scored patches and their diffs
-    results/finding-01/   the published verdicts and evidence (no raw payloads)
-    manual_score.py       command line scorer, one patch against one finding
+    results/finding-01/   the published verdicts and evidence (no raw payloads),
+                          plus one provenance file per patch recording the
+                          isolation that run actually had
+    score_container.py    stage 3 scorer, one patch in an isolated container
+    manual_score.py       stage 1 scorer, on the host, kept for the audit trail
     METHODOLOGY-NOTES.md  refinements found while running the pilot by hand
     assay-pilot-001-protocol.md   the governing protocol
 

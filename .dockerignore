@@ -1,0 +1,20 @@
+# The build context needs requirements.lock.txt and nothing else. The
+# repository itself is copied into a fresh container at run time, not baked
+# into the image, so keeping it out of the context here is both faster and a
+# guarantee that no held-out material can end up in an image layer.
+.venv/
+.git/
+__pycache__/
+*.pyc
+*.db
+*.log
+heldout/
+results/
+patches/
+app/
+harness/
+tools/
+scanner/
+corpus/
+reported/
+dist/

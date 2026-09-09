@@ -1,0 +1,74 @@
+{
+  "schema": "assay-pilot-001/provenance",
+  "schema_version": 1,
+  "stage": 3,
+  "finding": "finding-01",
+  "tool": "fixer-02",
+  "generated_utc": "2026-09-09T07:33:21Z",
+  "run_date_in_evidence": "2026-09-08",
+  "execution": {
+    "mode": "container",
+    "runtime": "docker",
+    "server_version": "29.5.2",
+    "image": "assay-pilot-001/scorer:1",
+    "image_id": "sha256:e703bcf34522bf7ba327b5fb1a5b4783030557d2603574aa449f89ff4f8670fb",
+    "requested_isolation": "network-none",
+    "network_mode_configured": "none",
+    "bind_mounts": [],
+    "no_bind_mounts": true,
+    "teardown": "container removed with docker rm --force",
+    "wall_seconds": 2.45
+  },
+  "container_observed": {
+    "isolation": {
+      "requested_mode": "network-none",
+      "observed_mode": "network-none",
+      "egress_blocked": true,
+      "interfaces": [
+        "lo"
+      ],
+      "default_route": false,
+      "probes": [
+        {
+          "kind": "tcp",
+          "target": "1.1.1.1:443",
+          "connected": false
+        },
+        {
+          "kind": "tcp",
+          "target": "8.8.8.8:53",
+          "connected": false
+        },
+        {
+          "kind": "tcp",
+          "target": "9.9.9.9:443",
+          "connected": false
+        },
+        {
+          "kind": "dns",
+          "target": "example.com",
+          "connected": false
+        }
+      ],
+      "reached": []
+    },
+    "patch_input": {
+      "kind": "patched_file",
+      "path": "/assay/patches/finding-01/fixer-02.py",
+      "applied_cleanly": null,
+      "sha256": "b6e9549aa9930045e39cef4e07207b94f351bb5118ab9621cd77135853028c6c"
+    },
+    "python": "3.9.25",
+    "platform": "Linux-6.8.0-117-generic-aarch64-with-glibc2.36",
+    "scanner": "Semgrep OSS 1.90.0 (vendored CWE-89 rule)",
+    "artifacts": {
+      "results/finding-01/fixer-02.json": "sha256:42af71db851de10b900e01babee80716ebba3cef462739c6c634f984842b1666",
+      "heldout/finding-01/results/fixer-02.json": "sha256:ae4975d058d0cee35ef4b3e84ee7d68196d41c6fee12f9550e982d5efe6b6f6d"
+    }
+  },
+  "exit_code": 0,
+  "evidence": {
+    "results/finding-01/fixer-02.json": "sha256:42af71db851de10b900e01babee80716ebba3cef462739c6c634f984842b1666",
+    "heldout/finding-01/results/fixer-02.json": "sha256:ae4975d058d0cee35ef4b3e84ee7d68196d41c6fee12f9550e982d5efe6b6f6d"
+  }
+}
