@@ -1,0 +1,105 @@
+{
+  "schema": "assay-pilot-001/summary",
+  "schema_version": 1,
+  "pilot": "assay-pilot-001",
+  "generated_utc": "2026-09-09T07:50:49Z",
+  "scanner": "Semgrep OSS 1.90.0 (vendored CWE-89 rule)",
+  "coverage": {
+    "findings_built": 1,
+    "findings_in_corpus": 15,
+    "tools": [
+      "fixer-01",
+      "fixer-02",
+      "fixer-03"
+    ],
+    "cells_possible": 3,
+    "cells_supplied": 3,
+    "cells_run": 3
+  },
+  "denominators": {
+    "alert_closed_rate": "alert closed / scored",
+    "verified_fix_rate": "verified / scored",
+    "gap": "alert_closed_rate minus verified_fix_rate",
+    "insufficient_rate": "insufficient / run",
+    "note": "rates are over cells that produced a verdict. A run with no verdict has no check A result and is counted only in the insufficient rate."
+  },
+  "per_tool": {
+    "fixer-01": {
+      "cells": {
+        "supplied": 1,
+        "run": 1,
+        "scored": 1,
+        "insufficient": 0
+      },
+      "alert_closed": 1,
+      "verified": 1,
+      "alert_closed_rate": 1.0,
+      "verified_fix_rate": 1.0,
+      "gap": 0.0,
+      "insufficient_rate": 0.0,
+      "failure_classes": {}
+    },
+    "fixer-02": {
+      "cells": {
+        "supplied": 1,
+        "run": 1,
+        "scored": 1,
+        "insufficient": 0
+      },
+      "alert_closed": 0,
+      "verified": 0,
+      "alert_closed_rate": 0.0,
+      "verified_fix_rate": 0.0,
+      "gap": 0.0,
+      "insufficient_rate": 0.0,
+      "failure_classes": {
+        "string-match-and-over-broad": 1
+      }
+    },
+    "fixer-03": {
+      "cells": {
+        "supplied": 1,
+        "run": 1,
+        "scored": 1,
+        "insufficient": 0
+      },
+      "alert_closed": 1,
+      "verified": 0,
+      "alert_closed_rate": 1.0,
+      "verified_fix_rate": 0.0,
+      "gap": 1.0,
+      "insufficient_rate": 0.0,
+      "failure_classes": {
+        "suppression-in-effect": 1
+      }
+    }
+  },
+  "overall": {
+    "cells": {
+      "supplied": 3,
+      "run": 3,
+      "scored": 3,
+      "insufficient": 0
+    },
+    "alert_closed": 2,
+    "verified": 1,
+    "alert_closed_rate": 0.6666666666666666,
+    "verified_fix_rate": 0.3333333333333333,
+    "gap": 0.3333333333333333,
+    "insufficient_rate": 0.0,
+    "failure_classes": {
+      "string-match-and-over-broad": 1,
+      "suppression-in-effect": 1
+    }
+  },
+  "not_measured": [
+    "median patch latency: the harness does not call the fixers, so it never observes generation time",
+    "cost per fix: same reason, no API call is made by this harness"
+  ],
+  "caveats": [
+    "Coverage is partial. 1 of the 15 findings in the corpus is built, so every number here describes that one finding and says nothing about the shapes not yet written: numeric context, LIKE, ORDER BY, multi-parameter, ORM, second order, multi-hop. The gap is expected to be larger in the harder shapes, which is a reason to distrust this number as an estimate of the whole.",
+    "These rows are counts, not rates: fixer-01, fixer-02, fixer-03. Each was scored on fewer than 3 cells, so the percentage restates one or two results and can only move in whole steps. Read the per cell table instead.",
+    "The overall row is 3 cells. It shows that the four checks separate a real fix from patches that only close the alert. It is not a rate that generalises to any tool or any codebase.",
+    "The harness does not call the fixers. Tool names are the names of the diff files supplied, and for Pilot 001 they are illustrative patches written to exercise the method, not output from the vendors named in the protocol. This is not a vendor comparison. See README."
+  ]
+}

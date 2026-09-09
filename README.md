@@ -85,7 +85,9 @@ Copilot Autofix, Codex, Buttercup); that vendor comparison is future work. The
 point of these three is that the four checks correctly separate a real fix from
 patches that only close the alert.
 
-Per-patch evidence is in `results/finding-01/`.
+Per-patch evidence is in `results/finding-01/`. The generated table across
+every finding and tool is `results/RESULTS.md`, with the machine-readable
+aggregate in `results/summary.json`.
 
 ## How the scorer runs
 
@@ -133,6 +135,7 @@ produced from.
 
     python tools/verify_stage3_parity.py          # containerisation changed nothing
     python tools/verify_insufficient_evidence.py  # every failure path reports itself
+    python tools/verify_report_math.py            # published rates match the artifacts
     python tools/check_no_leak.py                 # no held-out payload in a tracked file
 
 `verify_stage3_parity.py` re-scores all three Finding 1 patches in the
@@ -146,7 +149,73 @@ machine the evidence was captured on.
 a verdict and requires the scorer to name it. That list includes a patch that
 does not import, which before stage 3 would have scored as a patch that shut
 the hole, because every attack failing to connect reads exactly like every
-attack being blocked.
+attack being blocked. See METHODOLOGY-NOTES.md note 4.
+
+`verify_report_math.py` recounts every published rate from the per-cell
+evidence files, using plain counting and division and nothing from the
+aggregation code, then compares. Calling the same aggregation twice would
+prove only that it is deterministic. The rates are the headline of this pilot
+and the one number nobody can check by eye, which by the pattern in note 4
+makes them the next place a false pass would hide: an arithmetic error there
+would not look like a bug, it would look like a finding.
+
+## The matrix and the report
+
+`run_matrix.py` runs the grid: every built finding against every tool that
+supplied a patch for it, scoring each cell in an isolated container and
+aggregating the results.
+
+    python run_matrix.py                 score anything not yet scored, report
+    python run_matrix.py --report-only   report from what is already on disk
+    python run_matrix.py --rescore       score every supplied cell again
+
+Patches are supplied as diff files, one per cell, at
+`patches/<finding-id>/<tool>.patch`. **The harness never calls a fixer.** That
+is deliberate: a harness that invoked the tools itself would be making choices
+about prompt, temperature, retries and timeouts, and every one of those
+choices would end up inside the result. Protocol section 2 fixes the prompt
+and requires it to be identical across tools, and keeping generation outside
+the harness is how that stays true.
+
+It will not overwrite an existing result without `--rescore`. The three
+Finding 1 artifacts have been byte-identical since the manual run, through the
+Stage 1 restructure and the Stage 3 containerisation, and two parity gates
+exist to prove it. Re-scoring them by default would put that chain at the
+mercy of whoever runs the script.
+
+### Denominators
+
+A cell is one finding scored against one tool.
+
+| Denominator | Meaning |
+|---|---|
+| supplied | a diff exists on disk for that cell |
+| run | the scorer actually ran it |
+| scored | the run produced VERIFIED or NOT VERIFIED |
+| insufficient | the run produced INSUFFICIENT EVIDENCE |
+
+Alert-closed rate and verified-fix rate are over `scored`, because a run that
+produced no verdict produced no check A result and cannot be counted for or
+against. That choice flatters a tool with many insufficient runs, so the
+insufficient rate sits in the same table rather than in a footnote, and every
+row prints its own cell counts. A rate whose denominator is not on screen is
+not evidence. A tool with no scored cells shows `n/a`, never `0%`.
+
+The gap is a difference of two rates, so it is in percentage points.
+
+The report also generates its own caveats from the data: partial corpus
+coverage, rows whose denominator is too small to be a rate, and the fact that
+the tool names here are illustrative patches rather than vendor output. Those
+are generated rather than written by hand so they cannot fall out of date with
+the numbers they qualify.
+
+### What is not measured
+
+Protocol section 5 also asks for median patch latency and cost per fix. The
+harness does not call the fixers, so it cannot observe either. They are
+reported as not measured rather than estimated. The wall clock in the
+provenance files is how long scoring took, which is a fact about this harness
+and not about any tool.
 
 ## Pinned versions
 
@@ -262,6 +331,9 @@ legible without the payloads.
     results/finding-01/   the published verdicts and evidence (no raw payloads),
                           plus one provenance file per patch recording the
                           isolation that run actually had
+    results/RESULTS.md    the generated results table across the matrix
+    results/summary.json  the machine-readable aggregate
+    run_matrix.py         stage 4 runner, the findings by tools matrix
     score_container.py    stage 3 scorer, one patch in an isolated container
     manual_score.py       stage 1 scorer, on the host, kept for the audit trail
     METHODOLOGY-NOTES.md  refinements found while running the pilot by hand
