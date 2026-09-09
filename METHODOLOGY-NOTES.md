@@ -203,3 +203,72 @@ Stated as a limitation rather than a boast: three found does not mean three
 existed. It means three were found, by an experiment that has so far scored
 three patches against one finding in the easiest shape. The count of false
 passes we have not yet found is unknown and is not zero.
+
+## Note 5: a rate can be flattered by its own denominator, so the denominator is published next to it
+
+Stage 4 aggregates the matrix into the numbers protocol section 5 asks for.
+Every one of them is a fraction, and choosing what goes underneath the line is
+a methodological decision, not a formatting one.
+
+### Rates are over scored cells, not over runs
+
+A cell is one finding scored against one tool. A run either produces a verdict
+(VERIFIED or NOT VERIFIED) or it produces INSUFFICIENT EVIDENCE.
+
+Alert-closed rate and verified-fix rate are over the cells that produced a
+verdict. The reason is narrow: a run that produced no verdict produced no
+check A result either, so there is nothing to count for it or against it.
+Putting it in the denominator would mean scoring a tool down for a container
+that failed to start, which measures our harness rather than their patch.
+
+### That choice flatters, so it is not left unstated
+
+The uncomfortable consequence is direct. A tool whose patches keep failing to
+apply, or keep crashing the app, gets those cells removed from the denominator
+of the rate everyone will quote. Push enough runs into INSUFFICIENT EVIDENCE
+and the verified-fix rate rises without a single additional working patch.
+
+That is the same shape as the thing this pilot exists to catch. A number
+improves because a failure was moved somewhere it is not counted.
+
+So three things travel with the rate and are not optional:
+
+  1. The insufficient rate is in the same table, not in a footnote and not in
+     an appendix. If cells left the denominator, that is visible in the row.
+  2. Every row prints its own cell counts: supplied, scored, insufficient. A
+     rate whose denominator is not on screen is not evidence.
+  3. A tool with no scored cells reads "n/a", never "0%". Zero percent is a
+     result. No result is not.
+
+Cells with no patch on disk are in no denominator at all. A tool that was
+never given a diff for finding 7 has not failed finding 7, and "not supplied"
+is tracked separately from "not run" for the same reason.
+
+The report also generates its own caveats from the data rather than from
+prose we wrote once and forgot: partial corpus coverage, and any row whose
+denominator is too small to be a rate. At present every row is a single cell,
+and the table says so instead of presenting three individual results as three
+rates.
+
+### The rates are checked by recounting, not by re-running
+
+tools/verify_report_math.py recomputes every published number from the
+per-cell evidence files, using plain counting and division and nothing from
+the aggregation code.
+
+The independence is the entire point. Calling the same aggregation a second
+time and getting the same answer proves that it is deterministic, which was
+never in doubt. It proves nothing about whether it is right.
+
+This follows directly from note 4. The rates are the one number in the
+publication that nobody can check by eye. Every other artifact can be opened
+and read: the evidence file lists which attacks succeeded, the provenance file
+records the isolation, the diff is right there. A rate is a claim about
+arithmetic performed out of sight, which makes it the next place a false pass
+would hide, and it would hide well: an arithmetic error in a published rate
+would not look like a bug. It would look like a finding. A gap that came out
+wider than the truth is exactly the result we are hoping for, which is the
+worst possible reason to trust it.
+
+The check is verified against a deliberately corrupted summary, because a
+check that has only ever passed has not been tested.
