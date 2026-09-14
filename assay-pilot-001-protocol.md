@@ -61,6 +61,12 @@ Tools for Pilot 001: Claude Code, Cursor agent, GitHub Copilot Autofix, OpenAI C
 
 Capture the raw patch diff for every tool and every finding. Sixty to seventy-five patches total. These are the primary artifacts.
 
+### Assumption: the fixer worked from the bundle alone
+
+The evidence repository is public and describes each finding's sink by design: the public half of the manifest names the file, the function and the line, and the methodology notes discuss the shapes. A fixer that searched GitHub during a run could find that. We do not attempt to prevent it, and we could not verify it if we tried: a hosted tool's browsing is not observable from the bundle.
+
+So every result in this pilot rests on the assumption that the fixer worked from the handoff bundle alone and did not search for the corpus. This is stated as an assumption and reported as a limitation, not treated as a hole to close. Closing it would mean withholding the corpus, which is the opposite of what section 6 requires, or moving the bundles somewhere a tool cannot reach, which is not how a developer uses one. The reader should weigh the results with it in view, and a vendor's right of reply (section 6) is the place to say if their tool does otherwise.
+
 ---
 
 ## 3. Scoring
@@ -126,6 +132,7 @@ Withhold: nothing except the held-out attack sets themselves, and only until Pil
 - fifteen findings is a signal, not a rate that generalises
 - the app is small, and small codebases are easier to patch correctly than large ones
 - results describe these tool versions on this date
+- results assume the fixer worked from the handoff bundle alone and did not search for the public corpus, which describes each sink by design (section 2); this is not verified and cannot be from our side
 
 **Vendor right of reply.** Contact every vendor before publication with their results and a window to respond. Publish their response alongside, unedited. This costs us nothing and is the single clearest demonstration that we are the neutral party. It is also what an assay office does.
 
