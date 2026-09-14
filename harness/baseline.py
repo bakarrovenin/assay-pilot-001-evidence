@@ -223,7 +223,7 @@ def capture_scanner_baseline(finding, output_root=None):
     off, so the scan needs no network.
     """
     out_root = output_root or ROOT
-    sarif = os.path.join(out_root, "scanner", finding.id + ".sarif")
+    sarif = os.path.join(out_root, finding.scanner_dir, finding.id + ".sarif")
     os.makedirs(os.path.dirname(sarif), exist_ok=True)
     command = [finding.semgrep_bin, "scan",
                "--config", finding.rule_file_relative,
@@ -324,7 +324,7 @@ def capture(finding, captured=None, output_root=None, run_trap=True):
 
 def write_capture_record(finding, record, output_root=None):
     out_root = output_root or ROOT
-    path = os.path.join(out_root, "scanner", finding.id + ".capture.json")
+    path = os.path.join(out_root, finding.scanner_dir, finding.id + ".capture.json")
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(record, f, ensure_ascii=False, indent=2)

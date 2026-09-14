@@ -216,7 +216,13 @@ def score_in_container(tool, finding_id="finding-01", patch=None,
         argv += ["--patched-file", os.path.join(
             CONTAINER_ROOT, os.path.relpath(patched_file, ROOT))]
 
-    created = docker("create", "--name", name, *MODE_FLAGS[mode],
+    # The corpus selection travels with the run. Unset means the pilot corpus,
+    # exactly as before; set, the container scores the same manifest the host
+    # was pointed at (harness/corpus.py).
+    env_flags = []
+    if os.environ.get("ASSAY_MANIFEST"):
+        env_flags = ["-e", "ASSAY_MANIFEST=" + os.environ["ASSAY_MANIFEST"]]
+    created = docker("create", "--name", name, *MODE_FLAGS[mode], *env_flags,
                      # No bind mounts anywhere. The container gets a copy of
                      # the repository, not the repository.
                      "--workdir", CONTAINER_ROOT, image, *argv)

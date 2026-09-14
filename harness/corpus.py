@@ -40,7 +40,18 @@ import json
 import os
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MANIFEST_PATH = os.path.join(ROOT, "corpus", "manifest.json")
+
+# The pilot corpus is the default. A second corpus with its own manifest, the
+# public benchmark under benchmark/, is selected by naming its manifest in
+# ASSAY_MANIFEST, relative to the repository root. The harness reads the two
+# through the same loader and never mixes them: every path an entry carries
+# (app, held-out material, results, patches, scanner captures) is written in
+# the manifest, so a benchmark finding cannot write into a pilot directory
+# and the leak guards, which read the default manifest only, never treat
+# benchmark payloads as held-out material. The container run receives the
+# same variable (harness/container.py).
+MANIFEST_PATH = os.path.join(ROOT, os.environ.get("ASSAY_MANIFEST",
+                                                   os.path.join("corpus", "manifest.json")))
 
 SCHEMA_VERSION = 1
 
@@ -206,12 +217,21 @@ class Finding(object):
         return self.path(self.entry["reported_payload_file"])
 
     @property
+    def scanner_dir(self):
+        """Where check A's baseline SARIF and capture record live.
+
+        The pilot keeps them in scanner/. A second corpus names its own
+        directory in the entry so its captures never land beside the pilot's.
+        """
+        return self.entry.get("scanner_dir", "scanner")
+
+    @property
     def sarif_path(self):
-        return self.path(os.path.join("scanner", self.id + ".sarif"))
+        return self.path(os.path.join(self.scanner_dir, self.id + ".sarif"))
 
     @property
     def capture_record_path(self):
-        return self.path(os.path.join("scanner", self.id + ".capture.json"))
+        return self.path(os.path.join(self.scanner_dir, self.id + ".capture.json"))
 
     # ---- network shape ---------------------------------------------------
 

@@ -4,7 +4,11 @@
 # any model trained on this repo, must never see the full attack set, the
 # benign set, the captured baseline, or the known-correct reference.
 # Withheld only until Pilot 002 exists (see protocol section 6).
-heldout/
+# Anchored to the repository root: this is the PILOT's held-out tree only.
+# The public benchmark keeps its material under benchmark/*/material/, which
+# must stay tracked; an unanchored rule would silently untrack it (enforced by
+# tools/verify_corpus_separation.py).
+/heldout/
 
 # Python virtual environment (large, machine-specific, reproducible from
 # requirements.lock.txt)

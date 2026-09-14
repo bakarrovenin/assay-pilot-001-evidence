@@ -176,6 +176,7 @@ produced from.
     python tools/verify_report_math.py            # published rates match the artifacts
     python tools/check_no_leak.py                 # no held-out payload in a tracked file
     python tools/check_history_no_leak.py         # nor in any blob the history carries
+    python tools/verify_corpus_separation.py      # pilot answer key stays secret, benchmark stays public
 
 `verify_stage3_parity.py` re-scores all three Finding 1 patches in the
 container and byte-compares every artifact against the committed ones, scores

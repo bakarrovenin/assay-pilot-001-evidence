@@ -98,7 +98,7 @@ def do_check(finding):
         record, new_baseline = baseline.capture(
             finding, captured=captured_date, output_root=scratch)
         new_record = baseline.write_capture_record(finding, record, scratch)
-        new_sarif = os.path.join(scratch, "scanner", finding.id + ".sarif")
+        new_sarif = os.path.join(scratch, finding.scanner_dir, finding.id + ".sarif")
 
         rows, ok = [], True
         for label, old, new in (
