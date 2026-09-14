@@ -64,6 +64,9 @@ bill.
 
 ## Deploy
 
+DEPLOY-CHECKLIST.md is the step-by-step version to follow on the day, with a
+success check after every step. The summary below is the same path in brief.
+
 On a fresh Ubuntu VM (as root, then a service user):
 
     # 1. Docker
@@ -104,7 +107,7 @@ Smoke test:
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `ASSAY_MANIFEST` | `benchmark/edition-01/manifest.json` | which corpus to score |
+| `ASSAY_MANIFEST` | `benchmark/edition-01/manifest.json` | which corpus to score; its `edition` is stamped on every stored result |
 | `ASSAY_ALLOWED_ORIGINS` | `https://assay.website,http://localhost:4321` | CORS allow-list |
 | `ASSAY_TRUST_PROXY` | unset | read client IP from `X-Forwarded-For` when behind a proxy |
 | `ASSAY_RATE_PER_HOUR` | `12` | per-IP score limit |
@@ -114,7 +117,9 @@ Smoke test:
 
 ## Rotating the corpus
 
-Each edition is its own manifest. Point `ASSAY_MANIFEST` at
+Each edition is its own directory and manifest. Point `ASSAY_MANIFEST` at
 `benchmark/edition-02/manifest.json` when it exists, restart, and the service
-scores the new edition. Results carry no edition tag yet; add one to the store
-schema when edition 2 ships so the leaderboard can separate them.
+scores the new edition. Every result row already carries its edition, so the
+leaderboard filters by edition and editions never merge; nothing needs
+migrating. The full procedure, including when an image rebuild is and is not
+needed, what happens to old results, and rollback, is in ROTATION.md.

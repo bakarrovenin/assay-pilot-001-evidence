@@ -37,6 +37,7 @@ def init():
             """
             CREATE TABLE IF NOT EXISTS results (
                 id            TEXT PRIMARY KEY,
+                edition       INTEGER NOT NULL,
                 finding       TEXT NOT NULL,
                 tool          TEXT NOT NULL,
                 version       TEXT NOT NULL,
@@ -49,16 +50,22 @@ def init():
         )
 
 
-def save(result):
-    """Persist one result. Returns the row id. Stores no patch text."""
+def save(result, edition):
+    """Persist one result under its corpus edition. Returns the row id.
+
+    The edition is stored so editions never merge in the leaderboard: a result
+    scored against edition 1 stays an edition-1 result forever, even after the
+    corpus rotates. Stores no patch text.
+    """
     rid = uuid.uuid4().hex
     created = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     with _lock, _conn() as conn:
         conn.execute(
-            "INSERT INTO results (id, finding, tool, version, verdict, "
-            "failure_class, checks_json, created_at) VALUES (?,?,?,?,?,?,?,?)",
+            "INSERT INTO results (id, edition, finding, tool, version, verdict, "
+            "failure_class, checks_json, created_at) VALUES (?,?,?,?,?,?,?,?,?)",
             (
                 rid,
+                int(edition),
                 result["finding"],
                 result["tool"],
                 result["version"],
@@ -80,6 +87,7 @@ def get(rid):
         "id": row["id"],
         "v": 1,
         "set": "submitted",
+        "edition": row["edition"],
         "finding": row["finding"],
         "tool": row["tool"],
         "version": row["version"],
@@ -119,10 +127,17 @@ def _tally(rows):
     }
 
 
-def leaderboard():
-    """Recount per (tool, version), most-evidenced first. Recomputed, not stored."""
+def leaderboard(edition):
+    """Recount per (tool, version) for one edition, most-evidenced first.
+
+    Filtered by edition so a rotated corpus never merges with an earlier one: the
+    leaderboard shows the edition it is asked for and no other. Recomputed from
+    the rows on every call, not stored.
+    """
     with _conn() as conn:
-        rows = conn.execute("SELECT * FROM results").fetchall()
+        rows = conn.execute(
+            "SELECT * FROM results WHERE edition = ?", (int(edition),)
+        ).fetchall()
     groups = {}
     for r in rows:
         groups.setdefault((r["tool"], r["version"]), []).append(r)
@@ -131,4 +146,4 @@ def leaderboard():
         for (tool, version), rs in groups.items()
     ]
     out.sort(key=lambda x: (-x["tally"]["scored"], x["tool"].lower()))
-    return {"total": len(rows), "rows": out}
+    return {"edition": int(edition), "total": len(rows), "rows": out}

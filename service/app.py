@@ -20,6 +20,7 @@ It executes untrusted code by design, so the defences are layered:
 
 import os
 import time
+from typing import Optional
 from collections import defaultdict, deque
 
 from fastapi import FastAPI, Request
@@ -124,8 +125,10 @@ def healthz():
 
 
 @app.get("/leaderboard")
-def leaderboard():
-    return store.leaderboard()
+def leaderboard(edition: Optional[int] = None):
+    # The current edition by default, so a rotated corpus never merges with an
+    # older one. An explicit ?edition= reads a past edition.
+    return store.leaderboard(edition if edition is not None else scorer.EDITION)
 
 
 @app.get("/result/{rid}")
@@ -167,5 +170,5 @@ async def score(req: ScoreRequest, request: Request):
     except scorer.ScoringError as e:
         return JSONResponse({"error": str(e)}, status_code=400)
 
-    rid, created = store.save(result)
+    rid, created = store.save(result, scorer.EDITION)
     return {"id": rid, "created_at": created, "result": result}

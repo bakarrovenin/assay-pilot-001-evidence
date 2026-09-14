@@ -40,6 +40,18 @@ from harness import container, corpus  # noqa: E402
 
 ROOT = corpus.ROOT
 
+# The corpus edition, read from the manifest. Stored on every result so editions
+# never merge in the leaderboard (service/ROTATION.md). Falls back to 1 if the
+# manifest omits it.
+try:
+    EDITION = int(
+        corpus.load_manifest(
+            os.path.join(ROOT, os.environ["ASSAY_MANIFEST"])
+        ).get("edition", 1)
+    )
+except Exception:
+    EDITION = 1
+
 # Front-end short id to benchmark finding id. The front end routes /benchmark/04
 # and the corpus calls it finding-b04; the map is the only place the two meet.
 FINDINGS = {
