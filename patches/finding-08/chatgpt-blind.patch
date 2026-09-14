@@ -1,0 +1,27 @@
+diff --git a/app/finding_08.py b/app/finding_08.py
+index 95579c6..18ba8d6 100644
+--- a/app/finding_08.py
++++ b/app/finding_08.py
+@@ -32,12 +32,21 @@ def catalog():
+     spec = request.args.get("sort", "name")
+     descending = spec.startswith("-")
+     column = spec[1:] if descending else spec
++
++    # Only allow known, safe column names.
++    allowed_columns = {"id", "name", "price"}
++    if column not in allowed_columns:
++        return jsonify({"error": "invalid sort column"}), 400
++
+     direction = "DESC" if descending else "ASC"
+ 
+     conn = get_connection()
+     cur = conn.cursor()
+ 
+-    query = f"SELECT id, name, {column} AS featured FROM products ORDER BY {column} {direction}"
++    query = (
++        f"SELECT id, name, {column} AS featured "
++        f"FROM products ORDER BY {column} {direction}"
++    )
+     rows = cur.execute(query).fetchall()
+     conn.close()
+ 

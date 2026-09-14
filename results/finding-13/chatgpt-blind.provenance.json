@@ -1,0 +1,74 @@
+{
+  "schema": "assay-pilot-001/provenance",
+  "schema_version": 1,
+  "stage": 3,
+  "finding": "finding-13",
+  "tool": "chatgpt-blind",
+  "generated_utc": "2026-09-14T15:00:55Z",
+  "run_date_in_evidence": null,
+  "execution": {
+    "mode": "container",
+    "runtime": "docker",
+    "server_version": "29.5.2",
+    "image": "assay-pilot-001/scorer:1",
+    "image_id": "sha256:e703bcf34522bf7ba327b5fb1a5b4783030557d2603574aa449f89ff4f8670fb",
+    "requested_isolation": "network-none",
+    "network_mode_configured": "none",
+    "bind_mounts": [],
+    "no_bind_mounts": true,
+    "teardown": "container removed with docker rm --force",
+    "wall_seconds": 1.97
+  },
+  "container_observed": {
+    "isolation": {
+      "requested_mode": "network-none",
+      "observed_mode": "network-none",
+      "egress_blocked": true,
+      "interfaces": [
+        "lo"
+      ],
+      "default_route": false,
+      "probes": [
+        {
+          "kind": "tcp",
+          "target": "1.1.1.1:443",
+          "connected": false
+        },
+        {
+          "kind": "tcp",
+          "target": "8.8.8.8:53",
+          "connected": false
+        },
+        {
+          "kind": "tcp",
+          "target": "9.9.9.9:443",
+          "connected": false
+        },
+        {
+          "kind": "dns",
+          "target": "example.com",
+          "connected": false
+        }
+      ],
+      "reached": []
+    },
+    "patch_input": {
+      "kind": "diff",
+      "path": "/assay/patches/finding-13/chatgpt-blind.patch",
+      "applied_cleanly": true,
+      "sha256": "8c6fcdf06960984f958e89abc3e25fb17029646e498a72f25fd87b47f291f607"
+    },
+    "python": "3.9.25",
+    "platform": "Linux-6.8.0-117-generic-aarch64-with-glibc2.36",
+    "scanner": "Semgrep OSS 1.90.0 (vendored CWE-89 rule)",
+    "artifacts": {
+      "results/finding-13/chatgpt-blind.json": "sha256:d507816b7c4c99a9f39b0e8f69017d0cbfe4f49eef38b74fb8fe3569bc86dc14",
+      "heldout/finding-13/results/chatgpt-blind.json": "sha256:2c36afe3e6abbb362180273f31d7ab67a6397b2d47eddcbcb82f946587ecb772"
+    }
+  },
+  "exit_code": 0,
+  "evidence": {
+    "results/finding-13/chatgpt-blind.json": "sha256:d507816b7c4c99a9f39b0e8f69017d0cbfe4f49eef38b74fb8fe3569bc86dc14",
+    "heldout/finding-13/results/chatgpt-blind.json": "sha256:2c36afe3e6abbb362180273f31d7ab67a6397b2d47eddcbcb82f946587ecb772"
+  }
+}

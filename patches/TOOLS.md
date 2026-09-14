@@ -65,6 +65,11 @@ by side in the report.
   **no alert** (43 rules, 0 results), reproducing the Phase C no-alert on the
   stripped module: `results/finding-13/copilot-autofix-blind.no-alert.json`.
 
+- `chatgpt-blind`: **ChatGPT**, model **ChatGPT Think**, 2026-09-14, handoff
+  set-a, findings 01, 04, 08 and 13. Each given only that finding's bundle and
+  the fixed prompt. The returned fixes were written into the stripped originals
+  by us, exactly as returned, and diffed against the committed baseline.
+
 ## Provisional: every patch on findings 04, 08 and 13
 
 Every patch on findings 04, 08 and 13, real and probe, was cut against a

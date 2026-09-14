@@ -2,12 +2,13 @@
   "schema": "assay-pilot-001/summary",
   "schema_version": 1,
   "pilot": "assay-pilot-001",
-  "generated_utc": "2026-09-14T14:47:26Z",
+  "generated_utc": "2026-09-14T15:00:56Z",
   "scanner": "Semgrep OSS 1.90.0 (vendored CWE-89 rule)",
   "coverage": {
     "findings_built": 4,
     "findings_in_corpus": 15,
     "tools": [
+      "chatgpt-blind",
       "claude-code",
       "copilot-autofix",
       "copilot-autofix-blind",
@@ -18,9 +19,9 @@
       "lazy-string-match",
       "lazy-suppression"
     ],
-    "cells_possible": 36,
-    "cells_supplied": 17,
-    "cells_run": 17,
+    "cells_possible": 40,
+    "cells_supplied": 21,
+    "cells_run": 21,
     "cells_no_alert": 2
   },
   "denominators": {
@@ -31,6 +32,25 @@
     "note": "rates are over cells that produced a verdict. A run with no verdict has no check A result and is counted only in the insufficient rate."
   },
   "per_tool": {
+    "chatgpt-blind": {
+      "cells": {
+        "supplied": 4,
+        "run": 4,
+        "scored": 4,
+        "insufficient": 0,
+        "no_alert": 0,
+        "provisional": 0
+      },
+      "alert_closed": 4,
+      "verified": 3,
+      "alert_closed_rate": 1.0,
+      "verified_fix_rate": 0.75,
+      "gap": 0.25,
+      "insufficient_rate": 0.0,
+      "failure_classes": {
+        "over-broad": 1
+      }
+    },
     "claude-code": {
       "cells": {
         "supplied": 3,
@@ -202,21 +222,21 @@
   },
   "overall": {
     "cells": {
-      "supplied": 17,
-      "run": 17,
-      "scored": 17,
+      "supplied": 21,
+      "run": 21,
+      "scored": 21,
       "insufficient": 0,
       "no_alert": 2,
       "provisional": 13
     },
-    "alert_closed": 10,
-    "verified": 8,
-    "alert_closed_rate": 0.5882352941176471,
-    "verified_fix_rate": 0.47058823529411764,
-    "gap": 0.11764705882352944,
+    "alert_closed": 14,
+    "verified": 11,
+    "alert_closed_rate": 0.6666666666666666,
+    "verified_fix_rate": 0.5238095238095238,
+    "gap": 0.1428571428571428,
     "insufficient_rate": 0.0,
     "failure_classes": {
-      "over-broad": 3,
+      "over-broad": 4,
       "string-match": 1,
       "string-match-and-over-broad": 2,
       "suppression-in-effect": 3
@@ -247,21 +267,21 @@
     },
     "standing": {
       "cells": {
-        "supplied": 5,
-        "run": 5,
-        "scored": 5,
+        "supplied": 9,
+        "run": 9,
+        "scored": 9,
         "insufficient": 0,
         "no_alert": 1,
         "provisional": 0
       },
-      "alert_closed": 3,
-      "verified": 2,
-      "alert_closed_rate": 0.6,
-      "verified_fix_rate": 0.4,
-      "gap": 0.19999999999999996,
+      "alert_closed": 7,
+      "verified": 5,
+      "alert_closed_rate": 0.7777777777777778,
+      "verified_fix_rate": 0.5555555555555556,
+      "gap": 0.2222222222222222,
       "insufficient_rate": 0.0,
       "failure_classes": {
-        "over-broad": 1,
+        "over-broad": 2,
         "string-match-and-over-broad": 1,
         "suppression-in-effect": 1
       }
