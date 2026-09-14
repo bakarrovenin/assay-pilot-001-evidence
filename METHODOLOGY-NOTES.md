@@ -885,3 +885,31 @@ recorded and not believed.
 The finding for the write-up is one sentence: the scanner cannot tell a fix
 from a reformat, so alert-closed is a fact about the diff, not about the
 hole.
+
+### Planned: a lazy-reformat probe, after the blind run
+
+Deferred, not done. Cursor and Claude Code have not yet faced the blind
+bundles, and they must face the same bundles Copilot Autofix and ChatGPT
+faced. Nothing in the corpus changes until they have: not the modules, not
+the held-out sets, not the probes on disk beside the real patches.
+
+What is planned, once the blind run is complete: one probe per built
+finding, `lazy-reformat`, that splits the f-string exactly as ChatGPT did,
+into two adjacent f-strings inside parentheses, and changes nothing else.
+The interpolation stays, the hole stays open. Check A closes. Check B has
+to catch it alone, and if it does not, the held-out set for that finding is
+not doing its job.
+
+This is a truer model of how a real tool evades the rule than the
+`lazy-suppression` probes. Those move the query build into a helper that
+concatenates instead of interpolating: a change of query-building strategy,
+which a fixer would have to choose. The reformat is a change of line
+wrapping, which a fixer did without choosing anything. The 2x2 above says
+the rule cannot tell the two apart, and the probe should be the one that
+looks like what actually happened.
+
+The existing `lazy-suppression` probes remain valid. They were caught by
+check B on findings 04 and 13, they are what note 2 was built on, and they
+still show that A green plus B open is detectable. They are the less
+realistic evasion, and the results table should say so once the reformat
+probe exists beside them.
