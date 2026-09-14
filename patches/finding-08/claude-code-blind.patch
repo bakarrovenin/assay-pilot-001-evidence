@@ -1,0 +1,35 @@
+diff --git a/app/finding_08.py b/app/finding_08.py
+index 95579c6..d76d496 100644
+--- a/app/finding_08.py
++++ b/app/finding_08.py
+@@ -16,6 +16,10 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "store.db")
+ 
+ app = Flask(__name__)
+ 
++# Column names cannot be bound as query parameters, so the sort column is
++# restricted to this fixed allowlist and never taken from the request verbatim.
++SORTABLE_COLUMNS = {"id", "name", "price", "category", "sku"}
++
+ 
+ def get_connection():
+     conn = sqlite3.connect(DB_PATH)
+@@ -34,10 +38,18 @@ def catalog():
+     column = spec[1:] if descending else spec
+     direction = "DESC" if descending else "ASC"
+ 
++    if column not in SORTABLE_COLUMNS:
++        return jsonify({"error": "invalid sort column"}), 400
++
+     conn = get_connection()
+     cur = conn.cursor()
+ 
+-    query = f"SELECT id, name, {column} AS featured FROM products ORDER BY {column} {direction}"
++    # `column` and `direction` are both drawn from fixed sets above, so the
++    # query text only ever contains known identifiers.
++    query = (
++        f'SELECT id, name, "{column}" AS featured FROM products '
++        f'ORDER BY "{column}" {direction}'
++    )
+     rows = cur.execute(query).fetchall()
+     conn.close()
+ 

@@ -1,0 +1,24 @@
+diff --git a/app/finding_04.py b/app/finding_04.py
+index ef3dd12..201bede 100644
+--- a/app/finding_04.py
++++ b/app/finding_04.py
+@@ -26,13 +26,16 @@ def get_connection():
+ @app.route("/product_by_id")
+ def product_by_id():
+     """Look up a single product by its numeric id, e.g. /product_by_id?id=3"""
+-    pid = request.args.get("id", "0")
++    try:
++        pid = int(request.args.get("id", "0"))
++    except ValueError:
++        return jsonify({"error": "id must be an integer"}), 400
+ 
+     conn = get_connection()
+     cur = conn.cursor()
+ 
+-    query = f"SELECT id, name, price, category, sku FROM products WHERE id = {pid}"
+-    rows = cur.execute(query).fetchall()
++    query = "SELECT id, name, price, category, sku FROM products WHERE id = ?"
++    rows = cur.execute(query, (pid,)).fetchall()
+     conn.close()
+ 
+     results = [dict(row) for row in rows]

@@ -1,8 +1,8 @@
 # Assay Pilot 001 results
 
-Generated 2026-09-14T15:00:56Z by `run_matrix.py`. Scanner: Semgrep OSS 1.90.0 (vendored CWE-89 rule).
+Generated 2026-09-14T15:20:29Z by `run_matrix.py`. Scanner: Semgrep OSS 1.90.0 (vendored CWE-89 rule).
 
-Coverage: 4 of 15 findings built, 10 tools, 21 of 40 possible cells supplied, 21 run, 2 no-alert.
+Coverage: 4 of 15 findings built, 11 tools, 25 of 44 possible cells supplied, 25 run, 2 no-alert.
 
 2 cell(s) recorded **no alert raised**: the scanner found nothing, so the fixer produced no patch. This is not a verdict and not INSUFFICIENT EVIDENCE, and is counted in no rate. See the `.no-alert.json` sidecar for each.
 
@@ -19,6 +19,7 @@ Coverage: 4 of 15 findings built, 10 tools, 21 of 40 possible cells supplied, 21
 |---|---|---|---|---|---|---|---|---|
 | chatgpt-blind | standing | 4 | 4 | 0 | 100% | 75% | +25 pp | 0% |
 | claude-code | provisional | 3 | 3 | 0 | 67% | 100% | -33 pp | 0% |
+| claude-code-blind | standing | 4 | 4 | 0 | 100% | 75% | +25 pp | 0% |
 | copilot-autofix | provisional | 2 | 2 | 0 | 50% | 50% | +0 pp | 0% |
 | copilot-autofix-blind | standing | 2 | 2 | 0 | 50% | 50% | +0 pp | 0% |
 | cursor | provisional | 3 | 3 | 0 | 67% | 67% | +0 pp | 0% |
@@ -28,8 +29,8 @@ Coverage: 4 of 15 findings built, 10 tools, 21 of 40 possible cells supplied, 21
 | lazy-string-match | provisional | 2 | 2 | 0 | 0% | 0% | +0 pp | 0% |
 | lazy-suppression | provisional | 2 | 2 | 0 | 100% | 0% | +100 pp | 0% |
 | **Provisional** | provisional | 12 | 12 | 0 | 58% | 50% | +8 pp | 0% |
-| **Standing** | standing | 9 | 9 | 0 | 78% | 56% | +22 pp | 0% |
-| **All (pooled, recount only)** | both | 21 | 21 | 0 | 67% | 52% | +14 pp | 0% |
+| **Standing** | standing | 13 | 13 | 0 | 85% | 62% | +23 pp | 0% |
+| **All (pooled, recount only)** | both | 25 | 25 | 0 | 72% | 56% | +16 pp | 0% |
 
 Runs: provisional: cells produced against a corpus whose modules contained prose naming the flaw and the fix (note 12); a valid test of the harness, an invalid measurement of the tools. standing: every other cell. The two are never merged in a rate; the overall row above pools them and is kept for the recount only.
 
@@ -39,7 +40,7 @@ Denominators: alert-closed rate and verified-fix rate are over cells that produc
 
 | Class | Count |
 |---|---|
-| over-broad | 4 |
+| over-broad | 5 |
 | string-match | 1 |
 | string-match-and-over-broad | 2 |
 | suppression-in-effect | 3 |
@@ -49,11 +50,13 @@ Denominators: alert-closed rate and verified-fix rate are over cells that produc
 | Finding | Tool | Run | A | B | C | D | Verdict | Class |
 |---|---|---|---|---|---|---|---|---|
 | finding-01 | chatgpt-blind | standing | pass | pass | pass | pass | VERIFIED | correct |
+| finding-01 | claude-code-blind | standing | pass | pass | pass | pass | VERIFIED | correct |
 | finding-01 | fixer-01 | standing | pass | pass | pass | pass | VERIFIED | correct |
 | finding-01 | fixer-02 | standing | fail | fail | fail | pass | NOT VERIFIED | string-match-and-over-broad |
 | finding-01 | fixer-03 | standing | pass | fail | fail | fail | NOT VERIFIED | suppression-in-effect |
 | finding-04 | chatgpt-blind | standing | pass | pass | pass | pass | VERIFIED | correct |
 | finding-04 | claude-code | provisional | pass | pass | pass | pass | VERIFIED | correct |
+| finding-04 | claude-code-blind | standing | pass | pass | fail | pass | NOT VERIFIED | over-broad |
 | finding-04 | copilot-autofix | provisional | pass | pass | pass | pass | VERIFIED | correct |
 | finding-04 | copilot-autofix-blind | standing | pass | pass | pass | pass | VERIFIED | correct |
 | finding-04 | cursor | provisional | pass | pass | fail | pass | NOT VERIFIED | over-broad |
@@ -61,11 +64,13 @@ Denominators: alert-closed rate and verified-fix rate are over cells that produc
 | finding-04 | lazy-suppression | provisional | pass | fail | pass | fail | NOT VERIFIED | suppression-in-effect |
 | finding-08 | chatgpt-blind | standing | pass | pass | fail | pass | NOT VERIFIED | over-broad |
 | finding-08 | claude-code | provisional | fail | pass | pass | pass | VERIFIED | correct |
+| finding-08 | claude-code-blind | standing | pass | pass | pass | pass | VERIFIED | correct |
 | finding-08 | copilot-autofix | provisional | fail | pass | fail | pass | NOT VERIFIED | over-broad |
 | finding-08 | copilot-autofix-blind | standing | fail | pass | fail | pass | NOT VERIFIED | over-broad |
 | finding-08 | cursor | provisional | fail | pass | pass | pass | VERIFIED | correct |
 | finding-13 | chatgpt-blind | standing | pass | pass | pass | pass | VERIFIED | correct |
 | finding-13 | claude-code | provisional | pass | pass | pass | pass | VERIFIED | correct |
+| finding-13 | claude-code-blind | standing | pass | pass | pass | pass | VERIFIED | correct |
 | finding-13 | copilot-autofix | provisional | . | . | . | . | no alert raised | py/sql-injection |
 | finding-13 | copilot-autofix-blind | standing | . | . | . | . | no alert raised | py/sql-injection |
 | finding-13 | cursor | provisional | pass | pass | pass | pass | VERIFIED | correct |

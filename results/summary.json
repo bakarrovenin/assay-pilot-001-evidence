@@ -2,7 +2,7 @@
   "schema": "assay-pilot-001/summary",
   "schema_version": 1,
   "pilot": "assay-pilot-001",
-  "generated_utc": "2026-09-14T15:00:56Z",
+  "generated_utc": "2026-09-14T15:20:29Z",
   "scanner": "Semgrep OSS 1.90.0 (vendored CWE-89 rule)",
   "coverage": {
     "findings_built": 4,
@@ -10,6 +10,7 @@
     "tools": [
       "chatgpt-blind",
       "claude-code",
+      "claude-code-blind",
       "copilot-autofix",
       "copilot-autofix-blind",
       "cursor",
@@ -19,9 +20,9 @@
       "lazy-string-match",
       "lazy-suppression"
     ],
-    "cells_possible": 40,
-    "cells_supplied": 21,
-    "cells_run": 21,
+    "cells_possible": 44,
+    "cells_supplied": 25,
+    "cells_run": 25,
     "cells_no_alert": 2
   },
   "denominators": {
@@ -67,6 +68,25 @@
       "gap": -0.33333333333333337,
       "insufficient_rate": 0.0,
       "failure_classes": {}
+    },
+    "claude-code-blind": {
+      "cells": {
+        "supplied": 4,
+        "run": 4,
+        "scored": 4,
+        "insufficient": 0,
+        "no_alert": 0,
+        "provisional": 0
+      },
+      "alert_closed": 4,
+      "verified": 3,
+      "alert_closed_rate": 1.0,
+      "verified_fix_rate": 0.75,
+      "gap": 0.25,
+      "insufficient_rate": 0.0,
+      "failure_classes": {
+        "over-broad": 1
+      }
     },
     "copilot-autofix": {
       "cells": {
@@ -222,21 +242,21 @@
   },
   "overall": {
     "cells": {
-      "supplied": 21,
-      "run": 21,
-      "scored": 21,
+      "supplied": 25,
+      "run": 25,
+      "scored": 25,
       "insufficient": 0,
       "no_alert": 2,
       "provisional": 13
     },
-    "alert_closed": 14,
-    "verified": 11,
-    "alert_closed_rate": 0.6666666666666666,
-    "verified_fix_rate": 0.5238095238095238,
-    "gap": 0.1428571428571428,
+    "alert_closed": 18,
+    "verified": 14,
+    "alert_closed_rate": 0.72,
+    "verified_fix_rate": 0.56,
+    "gap": 0.15999999999999992,
     "insufficient_rate": 0.0,
     "failure_classes": {
-      "over-broad": 4,
+      "over-broad": 5,
       "string-match": 1,
       "string-match-and-over-broad": 2,
       "suppression-in-effect": 3
@@ -267,21 +287,21 @@
     },
     "standing": {
       "cells": {
-        "supplied": 9,
-        "run": 9,
-        "scored": 9,
+        "supplied": 13,
+        "run": 13,
+        "scored": 13,
         "insufficient": 0,
         "no_alert": 1,
         "provisional": 0
       },
-      "alert_closed": 7,
-      "verified": 5,
-      "alert_closed_rate": 0.7777777777777778,
-      "verified_fix_rate": 0.5555555555555556,
-      "gap": 0.2222222222222222,
+      "alert_closed": 11,
+      "verified": 8,
+      "alert_closed_rate": 0.8461538461538461,
+      "verified_fix_rate": 0.6153846153846154,
+      "gap": 0.23076923076923073,
       "insufficient_rate": 0.0,
       "failure_classes": {
-        "over-broad": 2,
+        "over-broad": 3,
         "string-match-and-over-broad": 1,
         "suppression-in-effect": 1
       }

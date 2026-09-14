@@ -1,0 +1,16 @@
+diff --git a/app/finding_13.py b/app/finding_13.py
+index f0bbc59..965da11 100644
+--- a/app/finding_13.py
++++ b/app/finding_13.py
+@@ -49,8 +49,9 @@ def show_favourite():
+         "SELECT name FROM favourites ORDER BY id DESC LIMIT 1").fetchone()
+     fav = row["name"] if row is not None else ""
+ 
+-    query = f"SELECT id, name, price, category, sku FROM products WHERE name = '{fav}'"
+-    rows = cur.execute(query).fetchall()
++    rows = cur.execute(
++        "SELECT id, name, price, category, sku FROM products WHERE name = ?",
++        (fav,)).fetchall()
+     conn.close()
+ 
+     results = [dict(r) for r in rows]
