@@ -12,7 +12,7 @@
     },
     {
       "id": "a02",
-      "payload": "1 OR 1=1",
+      "payload": "1 OR 8=8",
       "class": "boolean",
       "note": "Tautology past a real id.",
       "success_when": "returns more than 1 row"
@@ -26,7 +26,7 @@
     },
     {
       "id": "a04",
-      "payload": "-1 OR 1=1",
+      "payload": "-9 OR 9=9",
       "class": "boolean",
       "note": "Negative id then tautology.",
       "success_when": "returns more than 1 row"

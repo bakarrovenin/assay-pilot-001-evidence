@@ -3,7 +3,7 @@
   "tool": "lazy-string-match",
   "date": "2026-09-15",
   "scanner": "Semgrep OSS 1.90.0 (vendored CWE-89 rule)",
-  "patch_file": "../../../private/tmp/claude-502/-Users-mc-assay-pilot-001/7668285f-2dc8-431d-8ccb-55f870d8b4af/scratchpad/patched/finding_b04.lazy-string-match.py",
+  "patch_file": "benchmark/edition-01/patches/finding-b04/lazy-string-match.py",
   "checks": {
     "A_alert_closed": {
       "pass": false,
@@ -17,7 +17,7 @@
         {
           "id": "a02",
           "class": "boolean",
-          "payload": "1 OR 1=1",
+          "payload": "1 OR 8=8",
           "status": 200,
           "count": 5,
           "succeeded": true
@@ -33,7 +33,7 @@
         {
           "id": "a04",
           "class": "boolean",
-          "payload": "-1 OR 1=1",
+          "payload": "-9 OR 9=9",
           "status": 200,
           "count": 5,
           "succeeded": true

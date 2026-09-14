@@ -5,7 +5,16 @@ never seen. This repository is public. If a held-out attack payload ever
 appears in a tracked file it is readable by every vendor and by every future
 training run, and the finding it belongs to is void (protocol section 1).
 
-This script is the mechanical check. It runs three tests.
+This script is the mechanical check.
+
+  0. The tree it scans is complete. Every corpus material file that is not
+     git-ignored (the public benchmark's attacks, benign sets, references) must
+     be tracked, or a held-out payload inside an untracked file would be
+     invisible to the search below. Present-but-untracked, or missing, is a hard
+     failure, not a pass. This test exists because it once did pass on an
+     incomplete tree: the benchmark material was present but not yet tracked, so
+     the search never saw it, and the invariant was violated on the public repo
+     for several days (METHODOLOGY-NOTES.md note 14).
 
   1. Nothing under heldout/ is tracked by git. Hard failure if anything is.
 
@@ -46,6 +55,7 @@ Usage:
   python tools/check_no_leak.py
 """
 
+import glob
 import os
 import subprocess
 import sys
@@ -59,11 +69,73 @@ ROOT = corpus.ROOT
 # Very short strings would match by accident. Anything shorter is not searched.
 MIN_SEARCH_LEN = 5
 
+# Every corpus in the repository: the pilot, and each benchmark edition. The
+# guard must know about all of them, because a leak search that does not scan a
+# corpus's files cannot report a leak in them (note 14).
+MANIFESTS = [os.path.join("corpus", "manifest.json")] + [
+    os.path.relpath(p, ROOT)
+    for p in sorted(glob.glob(os.path.join(ROOT, "benchmark", "*", "manifest.json")))
+]
+
 
 def tracked_files():
     out = subprocess.run(["git", "ls-files"], cwd=ROOT, stdout=subprocess.PIPE,
                          check=True).stdout.decode()
     return [p for p in out.splitlines() if p]
+
+
+def git_ignored(rel):
+    return subprocess.run(["git", "check-ignore", "-q", rel], cwd=ROOT).returncode == 0
+
+
+def declared_material(entry):
+    """Every corpus material path a built finding declares in its manifest."""
+    app = entry.get("app", {})
+    paths = [app.get("file"), app.get("scan_target")]
+    paths += list(app.get("support_files") or [])
+    for key, value in (entry.get("heldout") or {}).items():
+        # "dir" is the directory the files live in, not a file; git tracks files.
+        if key != "dir" and isinstance(value, str) and "/" in value:
+            paths.append(value)
+    paths.append(entry.get("reported_payload_file"))
+    return [p for p in paths if p]
+
+
+def blind_spots(tracked_set):
+    """Corpus material the guard should scan but is not scanning.
+
+    The bug this closes: the benchmark's public material was present in the
+    working tree but not yet tracked, so it was absent from the file set this
+    guard scans, and a held-out payload inside it was invisible. The guard
+    reported NO LEAK while the invariant was in fact violated (note 14).
+
+    A private corpus (the pilot) keeps its material git-ignored on purpose, and
+    the guard reads it directly to search tracked files; that is expected and
+    exempt. But any declared material that is NOT git-ignored must be tracked,
+    or the guard is scanning an incomplete tree. Present-but-untracked or
+    missing entirely both fail, rather than pass.
+    """
+    out = []
+    for manifest in MANIFESTS:
+        full_manifest = os.path.join(ROOT, manifest)
+        if not os.path.exists(full_manifest):
+            continue
+        data = corpus.load_manifest(full_manifest)
+        paths = []
+        exp = data.get("experimenter_manifest")
+        if exp:
+            paths.append(exp)
+        for entry in data["findings"]:
+            if entry.get("status") == "built":
+                paths += declared_material(entry)
+        for rel in paths:
+            if git_ignored(rel):
+                continue  # private material, expected untracked
+            if rel not in tracked_set:
+                exists = os.path.exists(os.path.join(ROOT, rel))
+                out.append((manifest, rel,
+                            "present but untracked" if exists else "missing"))
+    return out
 
 
 def read_text(path):
@@ -76,6 +148,13 @@ def read_text(path):
 
 def main():
     files = tracked_files()
+    tracked_set = set(files)
+
+    # TEST 0: the guard must be scanning a complete tree. Any corpus material
+    # that is not git-ignored must be tracked, or a leak inside it is invisible
+    # to the search below (note 14). This runs first: if the tree is incomplete
+    # the rest of the guard cannot be trusted.
+    incomplete = blind_spots(tracked_set)
 
     # TEST 1: heldout/ must not be tracked at all.
     tracked_heldout = [p for p in files if p == "heldout" or p.startswith("heldout/")]
@@ -174,6 +253,15 @@ def main():
     print()
     failed = False
 
+    if incomplete:
+        failed = True
+        print("INCOMPLETE TREE: corpus material this guard should scan is not")
+        print("tracked, so a held-out payload inside it would be invisible here")
+        print("(note 14). Track it, or mark it git-ignored if it is private.")
+        for manifest, rel, why in incomplete:
+            print("  %-40s %s  (%s)" % (rel, why, manifest))
+        print()
+
     if manifest_error:
         failed = True
         print("LEAK: the public manifest carries experimenter material.")
@@ -215,8 +303,9 @@ def main():
         return 1
 
     print("RESULT: NO LEAK")
-    print("  heldout/ is untracked, no held-out attack payload appears in any")
-    print("  tracked file, and no module handed to a fixer explains its flaw.")
+    print("  every corpus's material is in the scanned tree, heldout/ is")
+    print("  untracked, no held-out attack payload appears in any tracked file,")
+    print("  and no module handed to a fixer explains its flaw.")
     return 0
 
 

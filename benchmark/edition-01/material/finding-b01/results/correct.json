@@ -3,7 +3,7 @@
   "tool": "correct",
   "date": "2026-09-15",
   "scanner": "Semgrep OSS 1.90.0 (vendored CWE-89 rule)",
-  "patch_file": "../../../private/tmp/claude-502/-Users-mc-assay-pilot-001/7668285f-2dc8-431d-8ccb-55f870d8b4af/scratchpad/patched/finding_b01.correct.py",
+  "patch_file": "benchmark/edition-01/patches/finding-b01/correct.py",
   "checks": {
     "A_alert_closed": {
       "pass": true,
@@ -25,7 +25,7 @@
         {
           "id": "a03",
           "class": "boolean",
-          "payload": "' OR 1=1 -- ",
+          "payload": "' OR 7=7 -- ",
           "status": 200,
           "count": 0,
           "succeeded": false
@@ -33,7 +33,7 @@
         {
           "id": "a04",
           "class": "boolean",
-          "payload": "zzz' OR 'a'='a",
+          "payload": "' OR 'ab'<>'cd",
           "status": 200,
           "count": 0,
           "succeeded": false
@@ -41,7 +41,7 @@
         {
           "id": "a05",
           "class": "boolean",
-          "payload": "' OR ''='",
+          "payload": "' OR 'ok'='ok",
           "status": 200,
           "count": 0,
           "succeeded": false

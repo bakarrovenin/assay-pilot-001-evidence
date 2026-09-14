@@ -2,7 +2,7 @@
   "corpus": "assay-benchmark",
   "edition": 1,
   "generated": "2026-09-15",
-  "note": "Discrimination proof. Each finding's known correct fix scores VERIFIED; each of the two deliberately lazy patches (a string match that blocks only the reported payload, and a reformat that closes the Semgrep alert by concatenating instead of interpolating) is caught. Check B catches every lazy patch. Scored on the host with the benchmark manifest; the container path uses the same harness.",
+  "note": "Discrimination proof. Each finding's known correct fix scores VERIFIED; each of the two deliberately lazy patches (a string match that blocks only the reported payload, and a reformat that closes the Semgrep alert by concatenating instead of interpolating) is caught. Check B catches every lazy patch. Scored on the host with the benchmark manifest; the container path uses the same harness. Attack payloads are disjoint from the pilot's held-out set (note 14).",
   "findings": {
     "finding-b01": [
       {

@@ -913,3 +913,78 @@ check B on findings 04 and 13, they are what note 2 was built on, and they
 still show that A green plus B open is detectable. They are the less
 realistic evasion, and the results table should say so once the reformat
 probe exists beside them.
+
+## Note 14: a guard passed on an incomplete tree, the seventh instance of a check right about what it was given and wrong about what mattered
+
+Found on 2026-09-15 preparing to push the scoring service. Running the full
+gate suite, `check_no_leak` reported LEAK DETECTED: the public benchmark's
+attack files (`benchmark/edition-01/material/finding-b*/attacks.json`) contain
+strings byte-identical to some of the pilot's held-out payloads. The overlap
+was the generic boolean tautologies both corpora independently used, the
+textbook always-true clauses in any SQL injection tutorial, one of them
+matching as a substring of a longer benchmark payload. The distinctive pilot
+payloads, the union projections and the schema markers, did not leak. The exact
+strings are not reproduced here, because this file is tracked and the guard
+would, correctly, flag it for doing so.
+
+That is a small exposure. The larger finding is how it went unseen. When the
+benchmark corpus was built, `check_no_leak` was run and reported NO LEAK, and
+that pass was recorded and pushed. It passed because at the moment it ran the
+benchmark material was present in the working tree but not yet tracked by git,
+and the guard scans tracked files. The files that would have failed it were
+invisible to it. The invariant, "no held-out payload appears in any tracked
+file", was then violated on a public repository for several days, from the
+benchmark push until this was found while preparing a later push.
+
+### The same shape as notes 4, 6, 7, 9, 12 and 13
+
+This is the seventh time a check of ours passed for a reason unrelated to the
+thing it was meant to establish, and again in the flattering direction. It is
+the exact shape of note 6, the leak guard that read the working tree while the
+answer key sat in an earlier commit: correct about what it was handed, wrong
+about what mattered. Here the guard was correct about the tracked files it
+scanned and wrong about the file set it should have scanned. A check that can
+pass by being handed less than the whole problem has not been tested against
+the whole problem.
+
+### The fix is structural, not a correction
+
+The payloads were regenerated so the benchmark's public set is disjoint from
+the pilot's held-out set: no benchmark string is a substring of any pilot
+held-out payload, verified by the guard itself. The attacks still exploit and
+still discriminate, correct fixes VERIFIED four of four and the eight lazy
+patches caught four of four, so the change is to the strings, not the method.
+
+But regenerating the payloads only closes this instance. The guard itself was
+changed so it cannot pass on an incomplete tree again. It now runs a
+completeness test first: for every corpus in the repository, the pilot and each
+benchmark edition, every material file the manifest declares that is not
+git-ignored must be tracked. Present-but-untracked, or missing, fails rather
+than passes. A private corpus keeps its material git-ignored on purpose and is
+exempt, which is the one legitimate reason a declared file is absent from the
+tracked set. The exact scenario that slipped through, benchmark material
+present but untracked, now returns exit 1, confirmed by a negative control that
+untracks one file and requires the failure.
+
+### The history retains it, and is not rewritten
+
+The fix makes the payloads disjoint going forward, so a push from here carries
+no overlap: `check_history_no_leak` over the push range is clean. But the
+pre-fix blobs remain in history at the benchmark commit, fetchable by SHA
+forever, so `check_history_no_leak --range HEAD` over the entire history still
+reports the overlap. That is the note-6 property exactly: a string cleaned in a
+later commit while the earlier blob stays reachable.
+
+History is not rewritten to purge it. That is the deliberate difference from a
+real secret. Note 6 concerned an answer key, whose exposure defeats the
+experiment; here the residue is textbook tautologies that were never secret and
+are trivially guessable, so the cost of a force-push that breaks every clone and
+every published SHA is not worth paying to remove strings that carry no
+information. The distinctive held-out material, the union projections, the
+schema markers, the benign sets and the oracle, was never in the overlap and is
+not in the public history. If a future collision ever involves distinctive
+held-out material rather than generic tautologies, that judgement flips and the
+history must be rewritten.
+
+The lesson is note 6's lesson again: a guard must know what it is supposed to
+be looking at, not only look correctly at what it happens to have been given.
