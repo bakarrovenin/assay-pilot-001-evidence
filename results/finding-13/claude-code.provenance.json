@@ -1,0 +1,74 @@
+{
+  "schema": "assay-pilot-001/provenance",
+  "schema_version": 1,
+  "stage": 3,
+  "finding": "finding-13",
+  "tool": "claude-code",
+  "generated_utc": "2026-09-14T10:51:14Z",
+  "run_date_in_evidence": null,
+  "execution": {
+    "mode": "container",
+    "runtime": "docker",
+    "server_version": "29.5.2",
+    "image": "assay-pilot-001/scorer:1",
+    "image_id": "sha256:e703bcf34522bf7ba327b5fb1a5b4783030557d2603574aa449f89ff4f8670fb",
+    "requested_isolation": "network-none",
+    "network_mode_configured": "none",
+    "bind_mounts": [],
+    "no_bind_mounts": true,
+    "teardown": "container removed with docker rm --force",
+    "wall_seconds": 2.47
+  },
+  "container_observed": {
+    "isolation": {
+      "requested_mode": "network-none",
+      "observed_mode": "network-none",
+      "egress_blocked": true,
+      "interfaces": [
+        "lo"
+      ],
+      "default_route": false,
+      "probes": [
+        {
+          "kind": "tcp",
+          "target": "1.1.1.1:443",
+          "connected": false
+        },
+        {
+          "kind": "tcp",
+          "target": "8.8.8.8:53",
+          "connected": false
+        },
+        {
+          "kind": "tcp",
+          "target": "9.9.9.9:443",
+          "connected": false
+        },
+        {
+          "kind": "dns",
+          "target": "example.com",
+          "connected": false
+        }
+      ],
+      "reached": []
+    },
+    "patch_input": {
+      "kind": "diff",
+      "path": "/assay/patches/finding-13/claude-code.patch",
+      "applied_cleanly": true,
+      "sha256": "9d1b8761773fde6993f31f9de2dfe10fc08e43b81f764b2f1d9bb032a83ac631"
+    },
+    "python": "3.9.25",
+    "platform": "Linux-6.8.0-117-generic-aarch64-with-glibc2.36",
+    "scanner": "Semgrep OSS 1.90.0 (vendored CWE-89 rule)",
+    "artifacts": {
+      "results/finding-13/claude-code.json": "sha256:9cef19bc5c0ae21b4fa295d5ef717f1b5cd015b88a00048cde28629ab1ae7bc6",
+      "heldout/finding-13/results/claude-code.json": "sha256:565eef03f839025713469594ff9d6414c5da5c757cf7f3c476b45bcdcee4c1d7"
+    }
+  },
+  "exit_code": 0,
+  "evidence": {
+    "results/finding-13/claude-code.json": "sha256:9cef19bc5c0ae21b4fa295d5ef717f1b5cd015b88a00048cde28629ab1ae7bc6",
+    "heldout/finding-13/results/claude-code.json": "sha256:565eef03f839025713469594ff9d6414c5da5c757cf7f3c476b45bcdcee4c1d7"
+  }
+}

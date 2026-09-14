@@ -1,0 +1,31 @@
+diff --git a/app/finding_08.py b/app/finding_08.py
+index e66a505..01ddd55 100644
+--- a/app/finding_08.py
++++ b/app/finding_08.py
+@@ -35,6 +35,8 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "store.db")
+ 
+ app = Flask(__name__)
+ 
++ALLOWED_SORT_COLUMNS = frozenset({"id", "name", "price", "category", "sku"})
++
+ 
+ def get_connection():
+     conn = sqlite3.connect(DB_PATH)
+@@ -53,12 +55,14 @@ def catalog():
+     column = spec[1:] if descending else spec
+     direction = "DESC" if descending else "ASC"
+ 
++    if column not in ALLOWED_SORT_COLUMNS:
++        return jsonify({"error": "invalid sort column"}), 400
++
+     conn = get_connection()
+     cur = conn.cursor()
+ 
+-    # column is an identifier, interpolated into the projection and the ORDER
+-    # BY. It cannot be a bound parameter. This is the flaw. direction is a
+-    # literal derived from the leading "-", never attacker text.
++    # column is an identifier, so it cannot be a bound parameter. Only names
++    # from ALLOWED_SORT_COLUMNS are interpolated; direction is a literal.
+     query = f"SELECT id, name, {column} AS featured FROM products ORDER BY {column} {direction}"
+     rows = cur.execute(query).fetchall()
+     conn.close()

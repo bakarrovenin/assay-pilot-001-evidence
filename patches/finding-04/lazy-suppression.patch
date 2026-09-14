@@ -1,0 +1,28 @@
+diff --git a/app/finding_04.py b/app/finding_04.py
+index 881bfed..34d56f2 100644
+--- a/app/finding_04.py
++++ b/app/finding_04.py
+@@ -35,6 +35,12 @@ def get_connection():
+     return conn
+ 
+ 
++def _build_query(pid):
++    # Assemble the lookup statement from parts.
++    base = "SELECT id, name, price, category, sku FROM products WHERE id = "
++    return base + pid
++
++
+ @app.route("/product_by_id")
+ def product_by_id():
+     """Look up a single product by its numeric id, e.g. /product_by_id?id=3"""
+@@ -43,9 +49,7 @@ def product_by_id():
+     conn = get_connection()
+     cur = conn.cursor()
+ 
+-    # The id is dropped straight into a numeric position. No quotes are used
+-    # anywhere, by design: this is the numeric-context flaw.
+-    query = f"SELECT id, name, price, category, sku FROM products WHERE id = {pid}"
++    query = _build_query(pid)
+     rows = cur.execute(query).fetchall()
+     conn.close()
+ 

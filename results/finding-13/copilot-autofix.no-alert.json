@@ -1,0 +1,15 @@
+{
+  "finding": "finding-13",
+  "tool": "copilot-autofix",
+  "outcome": "no-alert-raised",
+  "distinct_from": "INSUFFICIENT EVIDENCE. The harness produced no verdict here because the fixer produced no patch, and the fixer produced no patch because the scanner raised no alert. Nothing about a patch was tested; there was no patch. This is upstream of the four checks, not a failure inside them, and must not be counted as insufficient or as a NOT VERIFIED.",
+  "fixer": "GitHub Copilot Autofix",
+  "engine": "CodeQL Default setup",
+  "codeql_version": "CodeQL 2.27.0",
+  "ruleset_that_ran": "CodeQL default query suite for Python (analysis category /language:python)",
+  "expected_rule_that_did_not_fire": "py/sql-injection",
+  "why": "Second-order flaw. Input enters set_favourite, is stored via a parameterised INSERT in remember_favourite, and reaches the interpolated sink in show_favourite, a different function, after a round trip through the favourites table. CodeQL Default setup did not track the taint across the database store and reload, so it raised no alert.",
+  "source_repo": "https://github.com/bakarrovenin/assay-autofix-finding-13",
+  "date": "2026-09-14",
+  "recorded_utc": "2026-09-14T09:31:38Z"
+}

@@ -445,3 +445,371 @@ other note here ends by pointing at a mechanism that replaced somebody
 remembering. This one cannot, yet. Until it can, the honest statement is that
 the notes are the least verified artifact in this repository, and they are the
 part a reader is most likely to take on trust.
+
+## Note 8: the model authoring this corpus was re-routed mid-build after the content was flagged as cyber
+
+Recorded on 2026-09-14 while building the Phase A findings (04, 08, 13).
+Partway through authoring the SQL injection payloads, the session was moved to
+a different model. The attribution the harness stamps on commits changed from
+Claude Opus 5 to Claude Opus 4.8, and the session reported itself running on the
+new model from that point on. This is the behaviour of a safety classifier that
+flags cyber content, in this case exploit payloads for CWE-89, and routes the
+session elsewhere.
+
+It is worth having on the record, not as a complaint. This pilot's subject is
+exploit payloads, so it will meet this repeatedly: any session that writes or
+scores attack sets is producing exactly the content such a classifier looks for.
+Two consequences follow.
+
+First, provenance. The repository already discloses that the corpus was authored
+by one of the subjects under test, and that disclosure is the reason the flaws
+are based on published CWE-89 examples with citable sources rather than invented
+freehand. The honest extension is that the author was not even a single fixed
+model across the build. The corpus may be authored partly by one model and
+partly by another, with the boundary decided by a classifier mid-session and not
+by us. A reader auditing who wrote what should know that boundary is real and is
+not visible in the commit graph.
+
+Second, reproducibility of the process, not of the artifacts. The artifacts are
+deterministic and gated: every attack was checked to leak on the vulnerable app
+and be neutralised on the reference, and the byte-compare gates hold whichever
+model produced a file. What is not reproducible is the authoring session itself.
+Re-running this build may route differently, stop partway, or refuse, depending
+on how the content is classified that day. The gates do not depend on the model,
+which is the whole point of having them. The build process does.
+
+Stated plainly: this note records an operational fact about how the corpus was
+produced, so that the question "who authored this" has a truthful answer that
+includes "more than one model, split at a point we did not choose". It changes
+none of the verdicts and none of the held-out material.
+
+## Note 9: check A cannot pass a correct identifier fix, and our own reference fails it
+
+Found on 2026-09-14 scoring the Phase C patches on finding-08, the ORDER BY
+identifier shape.
+
+The correct fix for an identifier interpolation is an allow-list: validate the
+column against a fixed set and reject anything else. An identifier cannot be a
+bound parameter, so the f-string that builds the query stays in the code. The
+Semgrep rule matches that f-string. So check A, which asks whether the scanner
+still reports, stays red for a correct fix, because the correct fix does not
+remove the thing the scanner matches.
+
+This is not a theory about a hypothetical patch. Our own known-correct
+reference, heldout/finding-08/reference_app.py, allow-lists the column and
+still trips Semgrep at line 52. The reference we captured the baseline from,
+the artifact we call the ground-truth correct fix, fails our own check A.
+VERIFIED is therefore unreachable for finding-08 as built: no fix that keeps
+the allow-list shape can pass A, and the intended correct fix is one of them.
+
+Cursor's finding-08 patch showed it in a scored cell. It allow-listed all five
+real columns. Check B passed with zero held-out attacks leaking, check C
+passed with zero benign divergence, check D passed. The hole was shut and
+behaviour was preserved. It scored NOT VERIFIED, failure class "other", on
+check A alone, because the scanner still fired on the surviving f-string.
+
+### Same shape as note 2, opposite direction
+
+  note 2  fixer-03 rewrote the query into a shape Semgrep does not match.
+          Check A went green while the hole stayed open. A false negative.
+  note 9  a correct allow-list keeps the shape Semgrep does match.
+          Check A stays red while the hole is shut. A false positive.
+
+Both say the same thing the pilot exists to say: the scanner is not a fix
+oracle. Note 2 caught the scanner passing a broken fix; note 9 catches it
+failing a correct one. Check B caught the first. Nothing but reading the code
+catches the second, because check A is behaving exactly as written.
+
+### This is a note-7 class defect
+
+Note 7 was about assurances in prose that no code backed. This is the same
+category one level down: an artifact, the finding-08 reference, that does not
+satisfy the property we assert of it. We call it the known-correct VERIFIED
+fix. Under our own harness it is NOT VERIFIED. The claim and the code disagree,
+and the code is right: the claim is what has to change.
+
+### How it is being resolved, and what is not yet done
+
+The resolution, accepted before building the remaining findings, is that for
+identifier shapes check A is informational only and the verdict rests on B, C
+and D. The scanner cannot distinguish a correct allow-list from the original
+flaw, so its result carries no fix-signal here, and treating it as a gate
+manufactures a false NOT VERIFIED.
+
+Stated as a limitation, not a fix: this note records the defect. The check A
+redefinition for identifier shapes and a reference that passes whatever A
+becomes are both pending and are a precondition for building findings 08 and
+09 for real. Until then finding-08 cannot yield VERIFIED, and the one Phase C
+cell eligible for it, cursor, is recorded NOT VERIFIED for a check a correct
+fix cannot pass. The recorded verdict is left as it scored rather than
+hand-corrected, because the artifacts are mechanical and the fix belongs in
+the method, not in an edit to one result.
+
+## Note 10: check C is an exact full-body compare, so a cosmetic contract change reads as a regression
+
+Found on 2026-09-14 scoring finding-04, the numeric shape.
+
+Cursor's finding-04 patch cast the id to an integer and bound it. The products
+it returned were byte-identical to the reference for every benign input. It
+still failed check C on all fourteen, every one status 200 against an expected
+200, because the response echoes the id back in a "query_id" field, and the
+int cast made it echo as a number where the reference echoes the original
+string: 7 against "007", 1 against "1". The returned data was the same. The
+echoed type was not.
+
+Check C is an exact compare of the whole response body against the reference
+baseline. So it flagged a change in the echoed input type as a regression,
+which it is in the strict sense that a consumer parsing query_id as a string
+would break, and is not in the sense that mattered here, which is whether the
+right products came back. The failure class "over-broad" was applied to a
+patch that rejects nothing and returns the same rows.
+
+### The obvious suspect was not the cause
+
+Cursor's patch also added a 400 branch for non-integer input. During capture I
+predicted that branch might trip check C, and predicted the numeric benign
+inputs would pass because they are all numeric. Both halves were wrong in the
+same direction: the 400 branch never fired, because no benign input is
+non-numeric, and the numeric inputs did not pass, because the echo type
+changed. The thing I flagged was harmless and the thing I did not look at was
+the catch. Recorded because a check C failure is worth reading to its actual
+cause rather than to the plausible one.
+
+### What changes, accepted before building the rest
+
+Check C stays an exact full-body compare. It is mechanical, it is defensible,
+and "the fix changed the response contract" is a real regression a caller
+would see. What changes is that this is stated plainly rather than discovered
+per finding, and that the remaining findings are built with it in mind: either
+the endpoint does not echo the raw input in a form a type-coercing correct fix
+would alter, or the finding documents that check C will read such an echo as a
+regression. A benign set and a response shape that make a cosmetic divergence
+indistinguishable from a security-relevant one weaken the check, and that is a
+construction choice, not a property of check C.
+
+## Note 11: resolving note 9. Check A is informational for identifier shapes, and the reference is scanner-clean
+
+Done on 2026-09-14, before handing findings 08 and 09 to more fixers, because
+note 9 was a defect that blocked them: our known-correct fix failed our own
+harness.
+
+Two changes, and the order matters.
+
+### Check A no longer gates the verdict for identifier shapes
+
+An identifier fix is an allow-list. It cannot remove the f-string the Semgrep
+rule matches, so the scanner fires on a correct fix, and its result carries no
+fix-signal for this shape. So for shape_key "identifier-interpolation", check A
+is measured and recorded but does not gate the verdict, which rests on B, C and
+D. Every other shape gates on A exactly as before, so finding-01's committed
+artifact is byte-identical and both parity gates still hold. The artifact for
+an identifier finding now carries `A_alert_closed.informational` and
+`gates_verdict` so it explains itself; that field appears only for this shape,
+which is why it does not disturb the byte-compare on finding-01.
+
+Check A still feeds suppression-in-effect. An evasion that closes the alert by
+concatenating unvalidated input while leaving the hole open is still caught by
+A green plus B open, on identifier shapes as everywhere else. What changed is
+only that a correct fix is no longer failed for a scanner false positive.
+
+The verdict this corrected: finding-08 cursor was NOT VERIFIED, failure class
+"other", on check A alone, with the hole shut and behaviour preserved. It is
+now VERIFIED. The old verdict was the defect, not the patch. It is re-scored
+rather than hand-edited, because the artifacts are mechanical.
+
+### The reference is rebuilt to be scanner-clean
+
+The allow-list is the fix. The reference now assembles the query from the
+validated column and the literal direction rather than interpolating them, so
+there is no user string in the SQL and the scanner does not fire on it. Scored
+as a patch it is VERIFIED with check A actually passing, so the reference now
+passes its own gate under the strict scanner as well as the redefined one.
+
+This is a choice made for the reference, not a requirement placed on fixers. A
+fixer that allow-lists and keeps the f-string, as Cursor did, is VERIFIED,
+because check A is informational for this shape. We do not make the scanner
+dictate a fixer's code. We do make our own ground-truth artifact clean, so that
+"your known-correct reference trips your own scanner" is no longer true. The
+construction is incidental; the allow-list is the fix, and the experimenter
+manifest says so.
+
+### Same lesson as note 2, now closed in both directions
+
+  note 2   the scanner passed a broken fix. A false negative. Check B caught it.
+  note 9   the scanner failed a correct fix. A false positive. Reading the code
+           caught it.
+  note 11  the false positive is removed from the verdict for the shape it
+           afflicts, and the reference no longer triggers it.
+
+The scanner is not a fix oracle, which is the pilot's whole claim. The harness
+now encodes that for the one shape where the scanner is not just weak but
+actively wrong, instead of asserting it in prose while a gate contradicts it.
+
+### What is still owed
+
+This resolves the identifier shape. It does not touch the ORM raw-query shape
+(finding-12) or the multi-hop shape (finding-15), which are not built. If a
+correct fix for either also keeps a scanner-matched construction, the same
+question returns and check A will need the same treatment there. The rule is
+now explicit: check A gates only where a correct fix can close the alert. That
+is a property of the shape and must be decided per shape as each is built, not
+assumed.
+
+## Note 12: the corpus handed the fixer the answer, in prose
+
+Found on 2026-09-14, after the Claude Code batch was scored and every real
+tool's output had passed check B.
+
+The vulnerable modules for findings 04, 08 and 13 opened with a docstring
+written for us, not for a developer. finding_13.py said, in its first twenty
+lines, that the flaw was second order, that the sink was in show_favourite,
+that a fixer guarding only the entry point would leave the real sink open, and
+that "the correct fix is to bind the value as a parameter at the sink in
+show_favourite". finding_04.py said "the only fixes that work are the ones
+that change how the value reaches the query at all: bind it as a parameter,
+or validate it as an integer". finding_08.py said "the only correct fix is to
+validate the chosen column against an allow-list of real column names". Each
+had a comment on the line above the sink saying, in as many words, "this is
+the flaw". Each cited OWASP and PortSwigger for the shape.
+
+That module, unaltered, was the file in every handoff bundle. Cursor, Copilot
+Autofix and Claude Code were each given the bug and, in the same file, the
+name of the shape, the location of the sink and the fix that works. Every one
+of them produced that fix.
+
+### What it plausibly explains
+
+Eight real-tool cells were scored against this corpus. Check B, the held-out
+attack set, caught none of them: 0 successful attacks out of 93 fired. The
+held-out sets do discriminate; they caught all six of our own probe patches,
+including the two suppression-in-effect probes that check A passed. So the
+question the Phase C write-up asked, whether the shapes were too easy, had
+the wrong subject. The shapes were not too easy. The file said which fix to
+write. A held-out set cannot catch a fixer that was told the answer, because
+there is nothing for it to catch: the fix is correct.
+
+The two NOT VERIFIED cells were both check C, and both are consistent with the
+same reading. The docstring told each tool what the fix was but not what the
+benign inputs were, and check C is the one check the docstring did not
+answer.
+
+This does not mean the tools would have failed without the docstring. It
+means we do not know, which is the same thing for the purpose of a published
+number. Every scored cell to date is a dry run of the harness and not a
+measurement of the tools, and is marked so.
+
+### The third instance of one class
+
+  note 6   the answer key (reference fix, endpoint, oracle) was in the public
+           manifest, and in the history after it was removed from the tree
+  (unrecorded)
+           the finding-01 module, as first drafted on 2026-09-08, carried
+           comments announcing the flaw; the experimenter stripped them before
+           the first commit and before any handoff. No commit records this.
+           Every version of app/corpus_app.py reachable from this clone,
+           including the pre-rewrite history, is one blob, and it passes the
+           prose test with zero hits. It is counted here on the experimenter's
+           word, and marked as such.
+  note 12  findings 04, 08 and 13 were built, after both of those, with a
+           docstring that named the shape, the sink, the attack and the fix,
+           and were handed to three real tools that way
+
+Three carriers, one leak: the corpus told the fixer the answer. Data in a
+manifest, comments in a module, a docstring in a module. A corpus can leak
+its solution through prose as easily as through data, and prose is the harder
+one to see, because the person who wrote it was explaining the finding to
+themselves and it reads as documentation.
+
+finding-01 is left as it is. Its module is clean under the test, its three
+patches are illustrative fixes written by us rather than tool output, and its
+evidence is published with byte parity gates over it. There was no fixer to
+hand the answer to, so the confound this note records does not attach to
+those three cells; what attaches to them is already stated in the README,
+that they are ours. That is disclosed rather than corrected.
+
+### Both leak guards passed, and were right
+
+tools/check_history_no_leak.py was run on the seven unpushed commits that
+carried these modules, on the same day, immediately before the README
+correction was to be pushed. It reported NO LEAK IN HISTORY, and it was
+correct by its own definition. It searches for held-out payloads, experimenter
+oracle prose, reference fix code, the answer-key fields in a manifest, and
+paths under heldout/. A docstring saying "bind it as a parameter" is none of
+those. The working-tree guard, tools/check_no_leak.py, has the same
+definition and passed for the same reason.
+
+This is the shape recorded in notes 2, 4 and 6 again. A guard answered the
+question it was written to answer, correctly, while the thing that mattered
+walked past it. Both guards had been tested against known leaks
+(tools/verify_history_guard.py) and had failed on every one. None of the
+known leaks was prose in a module, so the guards were never asked.
+
+The push did not happen. It was held for an unrelated reason (seven commits
+behind, not one) long enough for the docstrings to be read.
+
+### How it is closed
+
+harness/prose.py defines the missing test. It extracts every comment and
+standalone string from a module and matches them against a vocabulary that
+names the flaw (flaw, inject, attack, sink, taint, second order), the
+mechanism (interpolate, concatenate, f-string, quote, escape), the fix (fix,
+bind, parameterise, allow-list, validate, identifier) and the experiment
+(scanner, Semgrep, CWE, OWASP, finding, shape, manifest, fixer, patch). A
+module handed to a fixer may say what it does for its users and nothing else.
+The list is blunt on purpose and will produce false positives; the cost of a
+false positive is rewording a comment, and the cost of the false negative is
+this note.
+
+Both guards now run it. check_no_leak.py fails on it in the working tree, as
+test 5. check_history_no_leak.py fails on it in any blob at a path the
+manifest hands to fixers, in any commit a push would send. Run on the same
+seven commits it had passed, the extended history guard reported DO NOT PUSH
+on exactly the three module blobs. verify_history_guard.py gained a fourth
+fixture, a module whose comment names the flaw and the fix and is cleaned in
+a later commit, and the guard fails on it. tools/build_handoff.py now builds
+the bundles mechanically and refuses to write one whose module fails the
+test; the first time it was run it refused, because a git checkout during a
+smoke test had silently restored the unstripped finding_04.py.
+
+The modules are stripped. Each docstring now says what the service does and
+how to run it. The removed text is preserved verbatim in the git-ignored
+experimenter manifest for each finding, with the pre-strip module beside it.
+The seed's users-table line, which said the records were "never meant to be
+publicly readable", now says "account records". finding-01's module was
+already clean; it, its three patches and their evidence are untouched and the
+byte parity gates over them still hold.
+
+Stripping moved the sink. The scanner baselines for 04, 08 and 13 were
+recaptured and the manifest's line numbers updated; the benign baselines were
+recaptured in the same run and are byte-identical to before, because the
+reference apps did not change. The harness was then run end to end on the
+stripped finding-04 with a throwaway bound-parameter patch, in a scratch
+output root, and returned VERIFIED with A, B and C all clean.
+
+### What the strip does not fix
+
+The twelve patches on findings 04, 08 and 13, nine from real tools and three
+probes, were cut against the pre-strip modules and no longer apply to the
+stripped ones. They are kept as they were produced. Their evidence stays on
+disk, marked provisional, and a --rescore of any of them would now report
+INSUFFICIENT EVIDENCE rather than a verdict, which is the truthful answer.
+
+Every one of the nine real-tool patches also deletes the "this is the flaw"
+comment from above the sink, so the diff itself carries those two or three
+lines as removed context. The module docstrings, which carried the fix, are
+not in any patch. This is disclosed rather than edited: the patches are what
+the tools produced.
+
+The blind re-run is the measurement. Until it happens there is no result
+about any tool, only a result about the corpus.
+
+### How the history reached the public repository
+
+The eight local commits from corpus phase A to this note carried the
+pre-strip modules as blobs, and a blob stays fetchable by SHA after the file
+is cleaned (note 6). They were squashed into one commit built from the
+stripped tree before the first push, with the eight messages carried in the
+squash message, so the public history begins at the stripped state and never
+carries the docstrings. The granular history is kept on the experimenter
+machine as the local branch pre-squash-local, beside the held-out material,
+and is not pushed. The extended history guard passes on what was pushed.

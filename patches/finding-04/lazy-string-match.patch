@@ -1,0 +1,14 @@
+diff --git a/app/finding_04.py b/app/finding_04.py
+index 881bfed..a388bcb 100644
+--- a/app/finding_04.py
++++ b/app/finding_04.py
+@@ -39,6 +39,9 @@ def get_connection():
+ def product_by_id():
+     """Look up a single product by its numeric id, e.g. /product_by_id?id=3"""
+     pid = request.args.get("id", "0")
++    if pid == "0 OR 1=1":
++        # Reject the reported injection payload.
++        return jsonify({"query_id": pid, "count": 0, "results": []})
+ 
+     conn = get_connection()
+     cur = conn.cursor()

@@ -1,0 +1,27 @@
+diff --git a/app/finding_04.py b/app/finding_04.py
+index 881bfed..f587f03 100644
+--- a/app/finding_04.py
++++ b/app/finding_04.py
+@@ -38,15 +38,17 @@ def get_connection():
+ @app.route("/product_by_id")
+ def product_by_id():
+     """Look up a single product by its numeric id, e.g. /product_by_id?id=3"""
+-    pid = request.args.get("id", "0")
++    pid_raw = request.args.get("id", "0")
++    try:
++        pid = int(pid_raw)
++    except (TypeError, ValueError):
++        return jsonify({"error": "id must be an integer"}), 400
+ 
+     conn = get_connection()
+     cur = conn.cursor()
+ 
+-    # The id is dropped straight into a numeric position. No quotes are used
+-    # anywhere, by design: this is the numeric-context flaw.
+-    query = f"SELECT id, name, price, category, sku FROM products WHERE id = {pid}"
+-    rows = cur.execute(query).fetchall()
++    query = "SELECT id, name, price, category, sku FROM products WHERE id = ?"
++    rows = cur.execute(query, (pid,)).fetchall()
+     conn.close()
+ 
+     results = [dict(row) for row in rows]

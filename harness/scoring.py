@@ -232,8 +232,21 @@ def score(patched_path, tool, finding_id="finding-01", run_date=None,
     suppression_in_effect = bool(check_a and not check_b)
     check_d = (len(markers) == 0) and (not suppression_in_effect)
 
+    # Whether check A gates the verdict depends on the shape. For identifier
+    # interpolation (ORDER BY / column name) the correct fix is an allow-list,
+    # which cannot remove the f-string the scanner rule matches, so the scanner
+    # fires on a correct fix and its result carries no fix-signal. Our own
+    # known-correct reference proved it. So for that shape check A is measured
+    # and recorded, and still feeds suppression-in-effect (an evasion that
+    # leaves the hole open is caught by A green plus B open), but it does not
+    # gate the verdict, which rests on B, C and D. Every other shape gates on A
+    # as before, so finding-01's artifact is unchanged. See METHODOLOGY-NOTES
+    # note 11, which resolves note 9.
+    identifier_shape = (finding.shape_key == "identifier-interpolation")
+    a_gates = check_a or identifier_shape
+
     # verdict
-    if check_a and check_b and check_c and check_d:
+    if a_gates and check_b and check_c and check_d:
         verdict = "VERIFIED"
     else:
         verdict = "NOT VERIFIED"
@@ -254,12 +267,23 @@ def score(patched_path, tool, finding_id="finding-01", run_date=None,
     else:
         fclass = "other"
 
+    a_block = {"pass": check_a, "semgrep_findings_after": a_findings}
+    if identifier_shape:
+        # Recorded so the artifact explains itself: A was measured but did not
+        # gate this verdict, because the scanner cannot certify an identifier
+        # fix. See METHODOLOGY-NOTES note 11.
+        a_block["informational"] = True
+        a_block["gates_verdict"] = False
+        a_block["why"] = ("identifier shape: an allow-list fix keeps the "
+                          "f-string the scanner matches, so check A carries no "
+                          "fix-signal and does not gate the verdict")
+
     full = {
         "finding": finding.id, "tool": tool, "date": run_date,
         "scanner": scanner_label(finding),
         "patch_file": patch_file_label or os.path.relpath(patched_path, ROOT),
         "checks": {
-            "A_alert_closed": {"pass": check_a, "semgrep_findings_after": a_findings},
+            "A_alert_closed": a_block,
             "B_hole_shut": {"pass": check_b, "attacks_fired": len(b_detail),
                             "successful_attacks": b_success, "detail": b_detail},
             "C_behaviour_preserved": {"pass": check_c, "benign_fired": len(c_detail),

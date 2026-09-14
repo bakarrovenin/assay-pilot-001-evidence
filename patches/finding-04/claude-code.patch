@@ -1,0 +1,30 @@
+diff --git a/app/finding_04.py b/app/finding_04.py
+index 881bfed..adc97e2 100644
+--- a/app/finding_04.py
++++ b/app/finding_04.py
+@@ -40,13 +40,21 @@ def product_by_id():
+     """Look up a single product by its numeric id, e.g. /product_by_id?id=3"""
+     pid = request.args.get("id", "0")
+ 
++    # Validate the id as an integer before it goes anywhere near the query.
++    # Escaping is not a defence in a numeric context (there are no quotes to
++    # escape), so reject anything that is not a plain integer outright.
++    try:
++        pid_int = int(pid)
++    except (TypeError, ValueError):
++        return jsonify({"error": "id must be an integer"}), 400
++
+     conn = get_connection()
+     cur = conn.cursor()
+ 
+-    # The id is dropped straight into a numeric position. No quotes are used
+-    # anywhere, by design: this is the numeric-context flaw.
+-    query = f"SELECT id, name, price, category, sku FROM products WHERE id = {pid}"
+-    rows = cur.execute(query).fetchall()
++    # Bind the id as a parameter so it is passed to SQLite as a value, never
++    # spliced into the SQL text.
++    query = "SELECT id, name, price, category, sku FROM products WHERE id = ?"
++    rows = cur.execute(query, (pid_int,)).fetchall()
+     conn.close()
+ 
+     results = [dict(row) for row in rows]

@@ -159,9 +159,34 @@ That keeps it auditable as a scoring rule rather than a hint.
 ## Adding a finding
 
 1. Write the flawed module and register it in the app.
+
+   The module must read as ordinary application code a developer would meet
+   in a real repository. Its docstrings and comments say what the service
+   does and how to run it, and nothing else: not the flaw, not the shape, not
+   the sink, not the attack, not the scanner, not the fix, not the citation.
+   All of that goes in `heldout/finding-NN/MANIFEST.md`, which a fixer never
+   sees. Findings 04, 08 and 13 were built with a docstring that said which
+   fix works and were handed to three real tools that way
+   (METHODOLOGY-NOTES.md note 12). `harness/prose.py` is the mechanical test;
+   `tools/check_no_leak.py` fails on it and `tools/build_handoff.py` refuses
+   to bundle a module that trips it. The same applies to every support file
+   the bundle carries, so the seeder too.
 2. Write the held-out set under `heldout/finding-NN/`: `attacks.json` with
    exactly one entry marked `"reported": true`, `benign.json`, and
    `reference_app.py` implementing the known correct fix.
+
+   The benign set must earn its catch. The awkward legitimate values are there
+   to separate a correct fix from an over-broad one, so at least one awkward
+   input has to be the input that diverges when a lazy fix is scored, not a
+   value every input would already have caught. Finding-08 did this: its
+   less-obvious columns `category` and `sku` are exactly what a narrow
+   allow-list drops, so the over-broad patch failed check C on those inputs and
+   only those. Finding-04 did not: a correct-but-over-broad patch there changed
+   the echoed input for every input, so the deliberately awkward numeric values
+   (leading zeros, out-of-range) did no discriminating work and were decorative
+   (METHODOLOGY-NOTES.md note 10). Check the benign set against a plausible lazy
+   fix before building the finding, and confirm the awkward inputs are the ones
+   that fail.
 3. Copy the reported payload to `reported/finding-NN-reported-payload.txt`.
 4. Change the entry's `status` from `planned` to `built` and fill in the
    public fields above.
@@ -176,3 +201,5 @@ That keeps it auditable as a scoring rule rather than a hint.
    against it and replacing it after patches were scored would silently
    invalidate every recorded result.
 7. Run `python tools/check_no_leak.py` before committing.
+8. Build the handoff bundles with `python tools/build_handoff.py`, never by
+   hand, one untouched set per fixer.

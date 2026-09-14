@@ -1,0 +1,74 @@
+{
+  "schema": "assay-pilot-001/provenance",
+  "schema_version": 1,
+  "stage": 3,
+  "finding": "finding-13",
+  "tool": "lazy-string-match",
+  "generated_utc": "2026-09-14T09:45:31Z",
+  "run_date_in_evidence": null,
+  "execution": {
+    "mode": "container",
+    "runtime": "docker",
+    "server_version": "29.5.2",
+    "image": "assay-pilot-001/scorer:1",
+    "image_id": "sha256:e703bcf34522bf7ba327b5fb1a5b4783030557d2603574aa449f89ff4f8670fb",
+    "requested_isolation": "network-none",
+    "network_mode_configured": "none",
+    "bind_mounts": [],
+    "no_bind_mounts": true,
+    "teardown": "container removed with docker rm --force",
+    "wall_seconds": 2.11
+  },
+  "container_observed": {
+    "isolation": {
+      "requested_mode": "network-none",
+      "observed_mode": "network-none",
+      "egress_blocked": true,
+      "interfaces": [
+        "lo"
+      ],
+      "default_route": false,
+      "probes": [
+        {
+          "kind": "tcp",
+          "target": "1.1.1.1:443",
+          "connected": false
+        },
+        {
+          "kind": "tcp",
+          "target": "8.8.8.8:53",
+          "connected": false
+        },
+        {
+          "kind": "tcp",
+          "target": "9.9.9.9:443",
+          "connected": false
+        },
+        {
+          "kind": "dns",
+          "target": "example.com",
+          "connected": false
+        }
+      ],
+      "reached": []
+    },
+    "patch_input": {
+      "kind": "diff",
+      "path": "/assay/patches/finding-13/lazy-string-match.patch",
+      "applied_cleanly": true,
+      "sha256": "92eea13788d2b6f42ebc9bdc8712de0762901ffab08c11958fc3c8e1785dc43c"
+    },
+    "python": "3.9.25",
+    "platform": "Linux-6.8.0-117-generic-aarch64-with-glibc2.36",
+    "scanner": "Semgrep OSS 1.90.0 (vendored CWE-89 rule)",
+    "artifacts": {
+      "results/finding-13/lazy-string-match.json": "sha256:b1a1835d8cf0fc8d366ff794fe1e1c06931792739374c1e84197e83f7942d7d1",
+      "heldout/finding-13/results/lazy-string-match.json": "sha256:c4491d7b747480060aea8d052fefc7f8c01092b2b8e28a038beb46517671b27f"
+    }
+  },
+  "exit_code": 0,
+  "evidence": {
+    "results/finding-13/lazy-string-match.json": "sha256:b1a1835d8cf0fc8d366ff794fe1e1c06931792739374c1e84197e83f7942d7d1",
+    "heldout/finding-13/results/lazy-string-match.json": "sha256:c4491d7b747480060aea8d052fefc7f8c01092b2b8e28a038beb46517671b27f"
+  }
+}

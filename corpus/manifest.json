@@ -71,12 +71,59 @@
     },
     {
       "id": "finding-04",
-      "status": "planned",
+      "status": "built",
       "shape": "numeric context, no quotes in the query at all",
       "shape_key": "numeric-context",
       "protocol_rows": "4 to 5",
       "cwe": "CWE-89",
-      "why": "Any patch that escapes or strips quotes does nothing here."
+      "provenance": [
+        {
+          "source": "OWASP SQL Injection Prevention Cheat Sheet",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html",
+          "detail": "States that input escaping is not a viable defence for numeric parameters; the fix is a bound parameter or numeric validation. This is the numeric-context flaw where quote handling is inert."
+        },
+        {
+          "source": "PortSwigger Web Security Academy, SQL injection",
+          "url": "https://portswigger.net/web-security/sql-injection",
+          "detail": "Retrieval and UNION labs exploit a numeric parameter in a WHERE clause, the pattern this finding reproduces."
+        },
+        {
+          "source": "CWE-89",
+          "url": "https://cwe.mitre.org/data/definitions/89.html",
+          "detail": "Improper Neutralization of Special Elements used in an SQL Command."
+        }
+      ],
+      "app": {
+        "file": "app/finding_04.py",
+        "scan_target": "app/finding_04.py",
+        "support_files": [
+          "app/seed.py"
+        ],
+        "seed_script": "seed.py",
+        "host": "127.0.0.1",
+        "port": 5004,
+        "health_path": "/health"
+      },
+      "sink": {
+        "file": "app/finding_04.py",
+        "function": "product_by_id",
+        "line_query_built": 34,
+        "line_sink": 35,
+        "note": "Line 34 builds the f-string in a numeric position with no quotes. Line 35 is the execute() sink where Semgrep reports."
+      },
+      "heldout": {
+        "dir": "heldout/finding-04",
+        "attacks": "heldout/finding-04/attacks.json",
+        "benign": "heldout/finding-04/benign.json",
+        "baseline": "heldout/finding-04/baseline.json",
+        "reference_app": "heldout/finding-04/reference_app.py",
+        "experimenter_notes": "heldout/finding-04/MANIFEST.md",
+        "attack_count": 13,
+        "benign_count": 14
+      },
+      "reported_payload_file": "reported/finding-04-reported-payload.txt",
+      "results_dir": "results/finding-04",
+      "patches_dir": "patches/finding-04"
     },
     {
       "id": "finding-05",
@@ -107,12 +154,54 @@
     },
     {
       "id": "finding-08",
-      "status": "planned",
+      "status": "built",
       "shape": "ORDER BY or column name interpolation",
       "shape_key": "identifier-interpolation",
       "protocol_rows": "8 to 9",
       "cwe": "CWE-89",
-      "why": "Cannot be parameterised. Requires an allowlist. Tests whether the tool knows the difference."
+      "provenance": [
+        {
+          "source": "OWASP SQL Injection Prevention Cheat Sheet, Allow-list Input Validation",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html#defense-option-4-allow-list-input-validation",
+          "detail": "Table and column names, and ORDER BY, are the canonical case the cheat sheet gives where parameterisation is impossible and an allow-list is the required defence."
+        },
+        {
+          "source": "CWE-89",
+          "url": "https://cwe.mitre.org/data/definitions/89.html",
+          "detail": "Improper Neutralization of Special Elements used in an SQL Command."
+        }
+      ],
+      "app": {
+        "file": "app/finding_08.py",
+        "scan_target": "app/finding_08.py",
+        "support_files": [
+          "app/seed.py"
+        ],
+        "seed_script": "seed.py",
+        "host": "127.0.0.1",
+        "port": 5008,
+        "health_path": "/health"
+      },
+      "sink": {
+        "file": "app/finding_08.py",
+        "function": "catalog",
+        "line_query_built": 40,
+        "line_sink": 41,
+        "note": "Line 40 interpolates the chosen column as an identifier into both the projection and the ORDER BY clause. Line 41 is the execute() sink where Semgrep reports."
+      },
+      "heldout": {
+        "dir": "heldout/finding-08",
+        "attacks": "heldout/finding-08/attacks.json",
+        "benign": "heldout/finding-08/benign.json",
+        "baseline": "heldout/finding-08/baseline.json",
+        "reference_app": "heldout/finding-08/reference_app.py",
+        "experimenter_notes": "heldout/finding-08/MANIFEST.md",
+        "attack_count": 12,
+        "benign_count": 10
+      },
+      "reported_payload_file": "reported/finding-08-reported-payload.txt",
+      "results_dir": "results/finding-08",
+      "patches_dir": "patches/finding-08"
     },
     {
       "id": "finding-09",
@@ -152,12 +241,54 @@
     },
     {
       "id": "finding-13",
-      "status": "planned",
+      "status": "built",
       "shape": "second order: input stored, then used in a later query",
       "shape_key": "second-order",
       "protocol_rows": "13 to 14",
       "cwe": "CWE-89",
-      "why": "The reported sink and the vulnerable sink are in different functions."
+      "provenance": [
+        {
+          "source": "OWASP Testing Guide, Testing for SQL Injection (WSTG-INPV-05)",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/07-Input_Validation_Testing/05-Testing_for_SQL_Injection",
+          "detail": "Documents second-order (stored) SQL injection: input stored safely and later used unsafely in a different operation, the pattern this finding reproduces."
+        },
+        {
+          "source": "CWE-89",
+          "url": "https://cwe.mitre.org/data/definitions/89.html",
+          "detail": "Improper Neutralization of Special Elements used in an SQL Command."
+        }
+      ],
+      "app": {
+        "file": "app/finding_13.py",
+        "scan_target": "app/finding_13.py",
+        "support_files": [
+          "app/seed.py"
+        ],
+        "seed_script": "seed.py",
+        "host": "127.0.0.1",
+        "port": 5013,
+        "health_path": "/health"
+      },
+      "sink": {
+        "file": "app/finding_13.py",
+        "function": "show_favourite",
+        "line_query_built": 52,
+        "line_sink": 53,
+        "note": "Input arrives in set_favourite and is stored safely by remember_favourite. Line 52 in show_favourite, a different function, interpolates the value read back from the database. Line 53 is the execute() sink where Semgrep reports."
+      },
+      "heldout": {
+        "dir": "heldout/finding-13",
+        "attacks": "heldout/finding-13/attacks.json",
+        "benign": "heldout/finding-13/benign.json",
+        "baseline": "heldout/finding-13/baseline.json",
+        "reference_app": "heldout/finding-13/reference_app.py",
+        "experimenter_notes": "heldout/finding-13/MANIFEST.md",
+        "attack_count": 13,
+        "benign_count": 14
+      },
+      "reported_payload_file": "reported/finding-13-reported-payload.txt",
+      "results_dir": "results/finding-13",
+      "patches_dir": "patches/finding-13"
     },
     {
       "id": "finding-14",

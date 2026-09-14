@@ -39,6 +39,14 @@ exercised.
                                   pass, so case 1 and 2 are not just a guard
                                   that fails on everything.
 
+  4. module prose cleaned in a    a vulnerable module, at the path the
+     later commit, blob still     manifest hands to fixers, whose comment
+     in history                   names the flaw and the fix, then a second
+                                  commit replacing it with a clean one. No
+                                  payload, no oracle, no fix code: the class
+                                  of leak note 12 records walking past
+                                  cases 1 to 3. The guard must fail.
+
   4. the real pre-rewrite commit  opportunistic. The Stage 1 commit that
                                   actually carried the answer key is still in
                                   this clone's object store, unreferenced,
@@ -120,11 +128,58 @@ def held_out_payload():
     return None, None, None
 
 
-def build_fixture(root, with_leak, then_clean):
-    repo = os.path.join(root, "clean" if not with_leak else
-                        ("cleaned" if then_clean else "leaking"))
+PROSE_LEAK_MODULE = '''"""Product lookup service."""
+
+def product_lookup(name):
+    # The name is interpolated straight into the query. This is the flaw;
+    # the fix is to bind it as a parameter.
+    return f"SELECT id FROM products WHERE name = '{name}'"
+'''
+
+PROSE_CLEAN_MODULE = '''"""Product lookup service."""
+
+def product_lookup(name):
+    return f"SELECT id FROM products WHERE name = '{name}'"
+'''
+
+
+def module_path_handed_to_fixers():
+    """A path the guard treats as a fixer-facing module, from the real manifest."""
+    sys.path.insert(0, ROOT)
+    from harness import corpus, prose
+    for finding in corpus.list_findings():
+        if finding.status == "built":
+            paths = prose.handed_to_fixer(finding)
+            if paths:
+                return paths[0]
+    return "app/corpus_app.py"
+
+
+def build_fixture(root, with_leak, then_clean, prose_leak=False):
+    name = "clean" if not (with_leak or prose_leak) else (
+        "cleaned" if then_clean else "leaking")
+    if prose_leak:
+        name = "prose-" + name
+    repo = os.path.join(root, name)
     os.makedirs(os.path.join(repo, "corpus"))
     init(repo)
+
+    if prose_leak:
+        # Case 4. Nothing here is held-out material; the leak is prose alone.
+        module = os.path.join(repo, module_path_handed_to_fixers())
+        os.makedirs(os.path.dirname(module), exist_ok=True)
+        with open(module, "w", encoding="utf-8") as f:
+            f.write(PROSE_LEAK_MODULE)
+        with open(os.path.join(repo, "corpus", "manifest.json"), "w",
+                  encoding="utf-8") as f:
+            json.dump({"pilot": "assay-pilot-001", "schema_version": 1,
+                       "findings": []}, f, indent=2)
+        commit(repo, "build the finding")
+        if then_clean:
+            with open(module, "w", encoding="utf-8") as f:
+                f.write(PROSE_CLEAN_MODULE)
+            commit(repo, "strip the comments before handoff")
+        return repo
 
     with open(os.path.join(repo, "README.md"), "w", encoding="utf-8") as f:
         f.write("fixture repository for tools/verify_history_guard.py\n")
@@ -174,11 +229,13 @@ def run_guard_on(repo, rev_range):
 
 
 CASES = [
-    # label, with_leak, then_clean, expected exit, what the output must contain
-    ("leak in the working tree", True, False, 1, "LEAK IN HISTORY"),
-    ("leak cleaned later, blob still in history", True, True, 1,
+    # label, with_leak, then_clean, prose_leak, expected exit, output must contain
+    ("leak in the working tree", True, False, False, 1, "LEAK IN HISTORY"),
+    ("leak cleaned later, blob still in history", True, True, False, 1,
      "LEAK IN HISTORY"),
-    ("no leak", False, False, 0, "NO LEAK IN HISTORY"),
+    ("no leak", False, False, False, 0, "NO LEAK IN HISTORY"),
+    ("module prose cleaned later, blob still in history", False, True, True,
+     1, "PROSE NAMES THE FLAW"),
 ]
 
 
@@ -228,8 +285,8 @@ def main():
     work = tempfile.mkdtemp(prefix="assay_history_guard_")
     results = []
     try:
-        for label, with_leak, then_clean, want_code, want_text in CASES:
-            repo = build_fixture(work, with_leak, then_clean)
+        for label, with_leak, then_clean, prose_leak, want_code, want_text in CASES:
+            repo = build_fixture(work, with_leak, then_clean, prose_leak)
             code, out = run_guard(repo)
             ok = (code == want_code) and (want_text in out)
             results.append((label, want_code, code, ok, out))
@@ -280,7 +337,8 @@ def main():
         return 1
 
     print("RESULT: THE HISTORY GUARD FAILS ON A LEAK, INCLUDING ONE CLEANED")
-    print("  FROM THE WORKING TREE, AND PASSES ON A CLEAN HISTORY")
+    print("  FROM THE WORKING TREE AND ONE THAT IS PROSE ALONE, AND PASSES ON")
+    print("  A CLEAN HISTORY")
     return 0
 
 

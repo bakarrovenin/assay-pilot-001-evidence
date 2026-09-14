@@ -5,7 +5,7 @@ rebuilds everything, so the data is always identical.
 
 Tables:
   products - the product catalogue exposed by the /product endpoint
-  users    - internal account records (never meant to be publicly readable)
+  users    - account records
 
 Run:  python seed.py
 """

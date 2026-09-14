@@ -1,0 +1,29 @@
+diff --git a/app/finding_13.py b/app/finding_13.py
+index ff641f6..7d1f014 100644
+--- a/app/finding_13.py
++++ b/app/finding_13.py
+@@ -61,6 +61,12 @@ def remember_favourite(name):
+     conn.close()
+ 
+ 
++def _build_query(fav):
++    # Assemble the lookup statement from parts.
++    base = "SELECT id, name, price, category, sku FROM products WHERE name = "
++    return base + "'" + fav + "'"
++
++
+ def show_favourite():
+     """Read the most recent favourite back and return its product details."""
+     conn = get_connection()
+@@ -70,10 +76,7 @@ def show_favourite():
+         "SELECT name FROM favourites ORDER BY id DESC LIMIT 1").fetchone()
+     fav = row["name"] if row is not None else ""
+ 
+-    # The stored value is interpolated into a new query here. It came from the
+-    # database, but it is still attacker-controlled: this is the second-order
+-    # sink, in a different function from where the input arrived.
+-    query = f"SELECT id, name, price, category, sku FROM products WHERE name = '{fav}'"
++    query = _build_query(fav)
+     rows = cur.execute(query).fetchall()
+     conn.close()
+ 

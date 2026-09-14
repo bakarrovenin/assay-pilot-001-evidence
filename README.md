@@ -80,14 +80,52 @@ A note on provenance: these three patches exercise the scoring method; they
 are not a comparison of named tools. fixer-01 is a correct parameterised fix.
 fixer-02 and fixer-03 are illustrative failing patches, and fixer-03 was
 constructed by us specifically to demonstrate the suppression-in-effect shape.
-None are output from the vendors named in the protocol (Claude Code, Cursor,
-Copilot Autofix, Codex, Buttercup); that vendor comparison is future work. The
-point of these three is that the four checks correctly separate a real fix from
-patches that only close the alert.
+The point of these three is that the four checks correctly separate a real fix
+from patches that only close the alert.
 
-Per-patch evidence is in `results/finding-01/`. The generated table across
-every finding and tool is `results/RESULTS.md`, with the machine-readable
-aggregate in `results/summary.json`.
+### Real tool output, and why every result to date is provisional
+
+An earlier version of this section said that none of the patches were output
+from the vendors named in the protocol and that the vendor comparison was
+future work. That stopped being true on 2026-09-14 and this README was not
+updated with it. Corrected here.
+
+Three real tools have been run on three further findings (04 numeric context,
+08 ORDER BY identifier, 13 second order), each given only that finding's
+handoff bundle and the protocol's fixed prompt:
+
+- **Cursor** (Grok 4.6 Medium) on 04, 08, 13
+- **GitHub Copilot Autofix** (CodeQL 2.27.0 Default setup) on 04, 08; on 13
+  CodeQL raised no alert, so there was no patch to score
+- **Claude Code** (v2.1.270, Opus 5) on 04, 08, 13
+
+Eight cells scored. Six VERIFIED. The two NOT VERIFIED (Cursor on 04, Autofix
+on 08) both failed on check C, behaviour preserved. No held-out attack has
+succeeded against any real tool's output: 0 of 93 fired. Per-cell evidence is
+in `results/finding-{04,08,13}/`, versions and dates in `patches/TOOLS.md`.
+
+Two disclosures.
+
+**One patch was generated and scored in the same session.** The Claude Code
+patch for finding-13 was produced by a Claude Code session that was then used,
+later in the same session, to run the scorer over it and the other Claude Code
+patches. The scoring is mechanical and ran in a torn-down container the same
+as every other cell, and the session did not change the harness, but generator
+and scorer were the same session and a reader is owed that fact.
+
+**All results to date are provisional.** After the Claude Code batch was
+scored we found that the vulnerable modules in the corpus carried, in their
+own docstrings and comments, a description of the flaw, the sink, and the
+correct fix. Every fixer was handed the answer alongside the bug. That
+plausibly explains why the held-out sets have caught only our own probe
+patches and never a real tool's output. The corpus is being stripped and the
+bundles rebuilt; every scored cell above stands as a dry run of the harness
+and not as a measurement of the tools, until they are re-run blind. See
+METHODOLOGY-NOTES.md.
+
+Per-patch evidence is in `results/finding-01/` and `results/finding-{04,08,13}/`.
+The generated table across every finding and tool is `results/RESULTS.md`,
+with the machine-readable aggregate in `results/summary.json`.
 
 ## How the scorer runs
 
@@ -212,8 +250,8 @@ not evidence. A tool with no scored cells shows `n/a`, never `0%`.
 The gap is a difference of two rates, so it is in percentage points.
 
 The report also generates its own caveats from the data: partial corpus
-coverage, rows whose denominator is too small to be a rate, and the fact that
-the tool names here are illustrative patches rather than vendor output. Those
+coverage, rows whose denominator is too small to be a rate, and which tool
+names are illustrative patches and which are real tool output. Those
 are generated rather than written by hand so they cannot fall out of date with
 the numbers they qualify.
 
@@ -317,13 +355,16 @@ legible without the payloads.
 - The vulnerability was seeded by us, not found in the wild.
 - One weakness class (SQL injection), one language (Python), one small
   application.
-- A single finding, in the easiest shape. The gap the pilot is hunting is
-  expected to be larger in harder shapes (numeric context, ORDER BY, second
-  order, multi-hop) that are not in this pilot.
-- Three patches is a small sample. It is a signal and a demonstration of
-  method, not a rate that generalises.
+- Four of fifteen findings built. The remaining shapes (LIKE, multi-parameter,
+  ORM, multi-hop) are not in this pilot.
+- Two or three scored cells per real tool. That is a signal and a
+  demonstration of method, not a rate that generalises, and it is not a
+  vendor ranking.
+- The vulnerable modules described their own flaw and fix in prose, so every
+  real-tool result is provisional until the blind re-run (see above).
 - Small codebases are easier to patch correctly than large ones.
-- Results describe these tool versions on this date (2026-09-08).
+- Results describe these tool versions on these dates (2026-09-08 for the
+  finding-01 probes, 2026-09-14 for the real tools).
 
 ## Repository layout
 

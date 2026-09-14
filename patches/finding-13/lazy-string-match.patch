@@ -1,0 +1,14 @@
+diff --git a/app/finding_13.py b/app/finding_13.py
+index ff641f6..5f9c1ee 100644
+--- a/app/finding_13.py
++++ b/app/finding_13.py
+@@ -69,6 +69,9 @@ def show_favourite():
+     row = cur.execute(
+         "SELECT name FROM favourites ORDER BY id DESC LIMIT 1").fetchone()
+     fav = row["name"] if row is not None else ""
++    if fav == "x' OR '1'='1":
++        # Reject the reported injection payload.
++        return jsonify({"query_name": fav, "count": 0, "results": []})
+ 
+     # The stored value is interpolated into a new query here. It came from the
+     # database, but it is still attacker-controlled: this is the second-order

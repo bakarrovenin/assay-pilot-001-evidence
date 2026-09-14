@@ -72,6 +72,7 @@ def _rate(numerator, denominator):
 
 def _tool_stats(cells, tool):
     supplied = run = scored = insufficient = verified = alert_closed = 0
+    no_alert = 0
     failure_classes = {}
     for (_, t), cell in cells.items():
         if t != tool or not cell.built:
@@ -79,6 +80,8 @@ def _tool_stats(cells, tool):
         if cell.supplied:
             supplied += 1
         state = cell.state
+        if state == matrix.NO_ALERT:
+            no_alert += 1
         if state == matrix.SCORED:
             run += 1
             scored += 1
@@ -99,7 +102,7 @@ def _tool_stats(cells, tool):
            else alert_rate - verified_rate)
     return {
         "cells": {"supplied": supplied, "run": run, "scored": scored,
-                  "insufficient": insufficient},
+                  "insufficient": insufficient, "no_alert": no_alert},
         "alert_closed": alert_closed,
         "verified": verified,
         "alert_closed_rate": alert_rate,
@@ -114,7 +117,8 @@ def aggregate(findings, tools, cells, scanner=None):
     built = [f for f in findings if f.status == "built"]
     per_tool = {tool: _tool_stats(cells, tool) for tool in tools}
 
-    pooled = {"supplied": 0, "run": 0, "scored": 0, "insufficient": 0}
+    pooled = {"supplied": 0, "run": 0, "scored": 0, "insufficient": 0,
+              "no_alert": 0}
     verified = alert_closed = 0
     classes = {}
     for stats in per_tool.values():
@@ -140,6 +144,7 @@ def aggregate(findings, tools, cells, scanner=None):
             "cells_possible": len(built) * len(tools),
             "cells_supplied": pooled["supplied"],
             "cells_run": pooled["run"],
+            "cells_no_alert": pooled["no_alert"],
         },
         "denominators": {
             "alert_closed_rate": "alert closed / scored",
@@ -216,9 +221,13 @@ def caveats(summary):
 
     out.append(
         "The harness does not call the fixers. Tool names are the names of "
-        "the diff files supplied, and for Pilot 001 they are illustrative "
-        "patches written to exercise the method, not output from the vendors "
-        "named in the protocol. This is not a vendor comparison. See README.")
+        "the diff files supplied. Some are illustrative patches we wrote to "
+        "exercise the method: the finding-01 fixer cells, and the lazy-* probe "
+        "cells built to test whether the held-out sets catch a lazy fix. "
+        "Others are real tool output. patches/TOOLS.md says which is which and "
+        "pins the versions and dates. Either way, with only a few scored cells "
+        "per tool this is not a vendor comparison and no rate here generalises. "
+        "See patches/TOOLS.md and README.")
     return out
 
 
@@ -237,11 +246,18 @@ def render_table(summary):
     cov = summary["coverage"]
     lines.append("Assay Pilot 001 results")
     lines.append("scanner: %s" % (summary.get("scanner") or "not recorded"))
+    na = cov.get("cells_no_alert", 0)
     lines.append("coverage: %d of %d findings built, %d tools, %d of %d "
-                 "possible cells supplied, %d run"
+                 "possible cells supplied, %d run%s"
                  % (cov["findings_built"], cov["findings_in_corpus"],
                     len(cov["tools"]), cov["cells_supplied"],
-                    cov["cells_possible"], cov["cells_run"]))
+                    cov["cells_possible"], cov["cells_run"],
+                    (", %d no-alert" % na) if na else ""))
+    if na:
+        lines.append("no-alert: %d cell(s) where the scanner raised no alert, "
+                     "so the fixer produced no patch. Not a verdict and not "
+                     "INSUFFICIENT EVIDENCE, counted in no rate. See the "
+                     ".no-alert.json sidecar for each." % na)
     lines.append("")
     header = ("%-12s %7s %7s %7s   %11s %11s %9s %9s"
               % ("tool", "supplied", "scored", "insuff", "alert-closed",
@@ -304,11 +320,19 @@ def render_markdown(summary, cells=None, findings=None):
                % (summary["generated_utc"],
                   summary.get("scanner") or "not recorded"))
     out.append("")
+    na = cov.get("cells_no_alert", 0)
     out.append("Coverage: %d of %d findings built, %d tools, %d of %d possible "
-               "cells supplied, %d run."
+               "cells supplied, %d run%s."
                % (cov["findings_built"], cov["findings_in_corpus"],
                   len(cov["tools"]), cov["cells_supplied"],
-                  cov["cells_possible"], cov["cells_run"]))
+                  cov["cells_possible"], cov["cells_run"],
+                  (", %d no-alert" % na) if na else ""))
+    if na:
+        out.append("")
+        out.append("%d cell(s) recorded **no alert raised**: the scanner found "
+                   "nothing, so the fixer produced no patch. This is not a "
+                   "verdict and not INSUFFICIENT EVIDENCE, and is counted in no "
+                   "rate. See the `.no-alert.json` sidecar for each." % na)
     out.append("")
     out.append("## How to read this")
     out.append("")
@@ -370,6 +394,12 @@ def render_markdown(summary, cells=None, findings=None):
                                "EVIDENCE | %s |"
                                % (finding.id, tool,
                                   (cell.insufficient or {}).get("reason", "")))
+                    continue
+                if cell.state == matrix.NO_ALERT:
+                    out.append("| %s | %s | . | . | . | . | no alert raised | %s |"
+                               % (finding.id, tool,
+                                  (cell.no_alert or {}).get(
+                                      "expected_rule_that_did_not_fire", "")))
                     continue
                 c = cell.evidence["checks"]
                 mark = lambda ok: "pass" if ok else "fail"

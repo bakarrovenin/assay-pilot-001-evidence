@@ -18,6 +18,12 @@ across tools; keeping generation outside the harness is how that stays true.
 
   scored        the patch ran and produced VERIFIED or NOT VERIFIED
   insufficient  the patch ran and produced INSUFFICIENT EVIDENCE
+  no-alert      the scanner raised no alert, so the fixer produced no patch.
+                Distinct from insufficient (there a patch ran and reached no
+                verdict; here there was never a patch) and from not-supplied
+                (there we simply were not given a diff; here the tool was
+                pointed at the finding and the scanner found nothing). Counted
+                in no rate. See results/<finding>/<tool>.no-alert.json.
   not-run       a diff is on disk but the scorer has not run it yet
   not-supplied  no diff on disk for this cell
   not-built     the finding is a structural placeholder, nothing to score
@@ -44,6 +50,7 @@ PATCHED_FILE_SUFFIX = ".py"
 
 SCORED = "scored"
 INSUFFICIENT = "insufficient"
+NO_ALERT = "no-alert"
 NOT_RUN = "not-run"
 NOT_SUPPLIED = "not-supplied"
 NOT_BUILT = "not-built"
@@ -61,6 +68,7 @@ class Cell(object):
         self.built = built
         self.evidence = None
         self.insufficient = None
+        self.no_alert = None
 
     @property
     def supplied(self):
@@ -74,6 +82,8 @@ class Cell(object):
             return SCORED
         if self.insufficient is not None:
             return INSUFFICIENT
+        if self.no_alert is not None:
+            return NO_ALERT
         if not self.supplied:
             return NOT_SUPPLIED
         # A diff is on disk but the scorer has not run it. Distinct from
@@ -121,6 +131,11 @@ def insufficient_path(finding, tool, root=ROOT):
 
 def provenance_path(finding, tool, root=ROOT):
     return os.path.join(root, finding.results_dir, tool + ".provenance.json")
+
+
+def no_alert_path(finding, tool, root=ROOT):
+    """Where a no-alert outcome is recorded. Not a verdict, in no rate."""
+    return os.path.join(root, finding.results_dir, tool + ".no-alert.json")
 
 
 def discover_tools(findings, root=ROOT):
@@ -179,9 +194,13 @@ def _load_existing(cell, finding, root):
     """Attach whatever result is already on disk for this cell."""
     ev = evidence_path(finding, cell.tool, root)
     ie = insufficient_path(finding, cell.tool, root)
+    na = no_alert_path(finding, cell.tool, root)
     if os.path.exists(ev):
         with open(ev, encoding="utf-8") as f:
             cell.evidence = json.load(f)
     elif os.path.exists(ie):
         with open(ie, encoding="utf-8") as f:
             cell.insufficient = json.load(f)
+    elif os.path.exists(na):
+        with open(na, encoding="utf-8") as f:
+            cell.no_alert = json.load(f)

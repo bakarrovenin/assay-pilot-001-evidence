@@ -66,6 +66,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from harness import corpus
+from harness import prose as module_prose
 
 ROOT = corpus.ROOT
 EXPERIMENTER = os.path.join(ROOT, "heldout", "corpus", "experimenter.json")
@@ -202,12 +203,30 @@ def main():
 
     fails, notes = [], []
 
+    # Every module a fixer is handed, by path, from the manifest at HEAD. A
+    # blob at one of these paths in any commit of the range is searched for
+    # prose that explains the flaw (harness/prose.py, note 12). Paths rather
+    # than content: a module that was later cleaned is still the leak in the
+    # commit that carried it, which is the whole point of reading history.
+    module_paths = set()
+    for finding in corpus.list_findings():
+        if finding.status == "built":
+            module_paths.update(module_prose.handed_to_fixer(finding))
+
     for sha, path in blobs:
         where = path or sha[:12]
         if path.startswith("heldout/"):
             fails.append(("HELD-OUT PATH", where, sha[:12]))
         text = git("cat-file", "blob", sha, binary=True).decode(
             "utf-8", errors="replace")
+
+        if path in module_paths:
+            hits = module_prose.violations(text)
+            if hits:
+                line, kind, term, excerpt = hits[0]
+                fails.append(("PROSE NAMES THE FLAW", "%s@%s" % (where, sha[:12]),
+                              "%d hit(s), first L%d [%s] %s"
+                              % (len(hits), line, term, excerpt[:50])))
 
         for fid, aid, payload in held:
             if payload and payload in text:
@@ -253,8 +272,9 @@ def main():
 
     print("RESULT: NO LEAK IN HISTORY")
     print("  No held-out payload, no experimenter prose, no manifest carrying "
-          "the answer key, and no heldout/ path in any of the %d blobs or %d "
-          "commit messages." % (len(blobs), len(commits)))
+          "the answer key, no module prose naming the flaw, and no heldout/ "
+          "path in any of the %d blobs or %d commit messages."
+          % (len(blobs), len(commits)))
     return 0
 
 

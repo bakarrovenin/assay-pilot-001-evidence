@@ -27,6 +27,15 @@ This script is the mechanical check. It runs three tests.
      parameterised fix and is published. Listed so that a fix appearing
      somewhere it was not deliberately published is visible.
 
+  5. No explanatory prose in any module handed to a fixer. Hard failure.
+     A comment or docstring in the vulnerable module, or in a support file
+     that ships with it, that names the flaw, the shape, the sink, the
+     attack, the scanner, the experiment or the fix. The vocabulary is in
+     harness/prose.py. This test exists because findings 04, 08 and 13 were
+     handed to three real tools with a docstring that said which fix works
+     (METHODOLOGY-NOTES.md note 12), and tests 1 to 4 were correct by their
+     own definition while it happened: none of them looks for prose.
+
 corpus.load_manifest separately refuses to load a public manifest carrying
 reference_fix, endpoint or oracle, so the answer key cannot drift back into
 the tracked half by accident. That check runs here too.
@@ -43,7 +52,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from harness import corpus
+from harness import corpus, prose
 
 ROOT = corpus.ROOT
 
@@ -87,9 +96,17 @@ def main():
     except corpus.ManifestError as e:
         manifest_error = str(e)
 
+    prose_leaks = []
     for finding in corpus.list_findings():
         if finding.status != "built":
             continue
+        # TEST 5: needs no held-out material, so it runs before the skip.
+        for rel in prose.handed_to_fixer(finding):
+            text = contents.get(rel)
+            if text is None:
+                continue
+            for line, kind, term, excerpt in prose.violations(text):
+                prose_leaks.append((finding.id, rel, line, kind, term, excerpt))
         missing = finding.missing_heldout(("attacks", "benign"))
         if missing:
             skipped.append((finding.id, missing))
@@ -170,6 +187,20 @@ def main():
             print("  %s" % path)
         print()
 
+    if prose_leaks:
+        failed = True
+        print("LEAK: a module handed to fixers explains its own flaw or fix.")
+        print("Comments and docstrings there may describe what the code does")
+        print("for its users, nothing else (harness/prose.py, note 12).")
+        seen = set()
+        for fid, rel, line, kind, term, excerpt in prose_leaks:
+            key = (fid, rel, line)
+            if key in seen:
+                continue
+            seen.add(key)
+            print("  %s %s:%d %s [%s] %s" % (fid, rel, line, kind, term, excerpt))
+        print()
+
     if leaks:
         failed = True
         print("LEAK: held-out attack payload text found in tracked files.")
@@ -184,8 +215,8 @@ def main():
         return 1
 
     print("RESULT: NO LEAK")
-    print("  heldout/ is untracked, and no held-out attack payload appears in")
-    print("  any tracked file.")
+    print("  heldout/ is untracked, no held-out attack payload appears in any")
+    print("  tracked file, and no module handed to a fixer explains its flaw.")
     return 0
 
 

@@ -1,0 +1,18 @@
+diff --git a/app/finding_04.py b/app/finding_04.py
+index 881bfed..2c4356a 100644
+--- a/app/finding_04.py
++++ b/app/finding_04.py
+@@ -43,10 +43,9 @@ def product_by_id():
+     conn = get_connection()
+     cur = conn.cursor()
+ 
+-    # The id is dropped straight into a numeric position. No quotes are used
+-    # anywhere, by design: this is the numeric-context flaw.
+-    query = f"SELECT id, name, price, category, sku FROM products WHERE id = {pid}"
+-    rows = cur.execute(query).fetchall()
++    # Use parameter binding so user input is treated as data, not SQL.
++    query = "SELECT id, name, price, category, sku FROM products WHERE id = ?"
++    rows = cur.execute(query, (pid,)).fetchall()
+     conn.close()
+ 
+     results = [dict(row) for row in rows]

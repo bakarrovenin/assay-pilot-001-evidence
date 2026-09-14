@@ -89,6 +89,15 @@ def collect():
                 stats = per_tool.setdefault(tool, _blank())
                 stats["insufficient"] += 1
                 continue
+            if name.endswith(".no-alert.json"):
+                # A distinct outcome: the scanner raised no alert, so the
+                # fixer produced no patch and no cell was ever scored. It is
+                # not a verdict and not INSUFFICIENT EVIDENCE, carries no
+                # check A result, and belongs in no rate. Recorded for the
+                # record, counted nowhere. See the sidecar file itself.
+                stats = per_tool.setdefault(name[:-len(".no-alert.json")], _blank())
+                stats["no_alert"] = stats.get("no_alert", 0) + 1
+                continue
             tool = name[:-len(".json")]
             data = load(os.path.join(results_dir, name))
             stats = per_tool.setdefault(tool, _blank())
