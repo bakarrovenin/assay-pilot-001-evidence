@@ -1,0 +1,29 @@
+# systemd unit for the benchmark scorer. Runs as a non-root user that is in the
+# docker group, so it can spawn scoring containers without the API process
+# itself being root. The patched code never runs in this process; it runs only
+# inside the no-egress container the harness creates.
+[Unit]
+Description=Assay benchmark scorer
+After=docker.service
+Requires=docker.service
+
+[Service]
+User=assay
+Group=docker
+WorkingDirectory=/opt/assay-pilot-001
+Environment=ASSAY_MANIFEST=benchmark/edition-01/manifest.json
+Environment=ASSAY_ALLOWED_ORIGINS=https://assay.website
+Environment=ASSAY_TRUST_PROXY=1
+Environment=ASSAY_BENCHMARK_DB=/opt/assay-benchmark-data/results.db
+# The venv has fastapi/uvicorn; the harness runs docker on the host.
+ExecStart=/opt/assay-pilot-001/.venv-service/bin/uvicorn app:app --host 127.0.0.1 --port 8080 --app-dir /opt/assay-pilot-001/service
+Restart=on-failure
+RestartSec=3
+# Process hardening for the API itself (not the scoring container).
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/opt/assay-benchmark-data /opt/assay-pilot-001/service/_patches
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

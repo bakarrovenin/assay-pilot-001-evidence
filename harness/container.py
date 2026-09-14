@@ -78,6 +78,7 @@ def docker(*args, **kw):
     return subprocess.run(["docker"] + list(args),
                           stdout=kw.get("stdout", subprocess.PIPE),
                           stderr=kw.get("stderr", subprocess.PIPE),
+                          timeout=kw.get("timeout"),
                           check=False)
 
 
@@ -180,7 +181,7 @@ def _repo_tar(path, root=ROOT):
 
 def score_in_container(tool, finding_id="finding-01", patch=None,
                        patched_file=None, run_date=None, mode="network-none",
-                       image=IMAGE, keep_output=None):
+                       image=IMAGE, keep_output=None, limits=None):
     """Score one patch in a fresh container. Returns (outcome, provenance, out_dir).
 
     Exactly one of patch (a unified diff) or patched_file (an already patched
@@ -222,7 +223,28 @@ def score_in_container(tool, finding_id="finding-01", patch=None,
     env_flags = []
     if os.environ.get("ASSAY_MANIFEST"):
         env_flags = ["-e", "ASSAY_MANIFEST=" + os.environ["ASSAY_MANIFEST"]]
+
+    # Resource caps for running untrusted patches. limits=None (the default,
+    # and what every pilot caller passes) adds no flags and no timeout, so the
+    # pilot's behaviour and its parity gates are unchanged. The scoring service
+    # passes real caps. These bound the sandbox; they never touch what the four
+    # checks compute, so they do not move a verdict.
+    limit_flags = []
+    timeout_s = None
+    if limits:
+        if limits.get("memory"):
+            # Equal --memory and --memory-swap means no swap: an OOM patch is
+            # killed rather than swapping the host to a crawl.
+            limit_flags += ["--memory", str(limits["memory"]),
+                            "--memory-swap", str(limits["memory"])]
+        if limits.get("cpus"):
+            limit_flags += ["--cpus", str(limits["cpus"])]
+        if limits.get("pids"):
+            limit_flags += ["--pids-limit", str(limits["pids"])]
+        timeout_s = limits.get("timeout_s")
+
     created = docker("create", "--name", name, *MODE_FLAGS[mode], *env_flags,
+                     *limit_flags,
                      # No bind mounts anywhere. The container gets a copy of
                      # the repository, not the repository.
                      "--workdir", CONTAINER_ROOT, image, *argv)
@@ -249,21 +271,34 @@ def score_in_container(tool, finding_id="finding-01", patch=None,
                                     % cp.stderr.decode(errors="replace").strip())
 
         started = time.time()
-        run = docker("start", "--attach", name)
+        timed_out = False
+        try:
+            run = docker("start", "--attach", name, timeout=timeout_s)
+        except subprocess.TimeoutExpired:
+            # The patch hung. The finally block force-removes the container,
+            # which kills it; there is no _outcome.json, so the verdict below
+            # falls through to INSUFFICIENT EVIDENCE with the timeout recorded.
+            timed_out = True
+            run = None
         elapsed = time.time() - started
-        logs = (run.stdout.decode(errors="replace")
-                + run.stderr.decode(errors="replace"))
+        if timed_out:
+            logs = "container exceeded the %ss time limit and was killed" % timeout_s
+        else:
+            logs = (run.stdout.decode(errors="replace")
+                    + run.stderr.decode(errors="replace"))
 
-        collect = docker("cp", "%s:%s/." % (name, CONTAINER_OUT), out_dir)
-        if collect.returncode != 0:
-            raise DockerUnavailable("docker cp out of container failed: %s"
-                                    % collect.stderr.decode(errors="replace").strip())
+        if not timed_out:
+            collect = docker("cp", "%s:%s/." % (name, CONTAINER_OUT), out_dir)
+            if collect.returncode != 0:
+                raise DockerUnavailable("docker cp out of container failed: %s"
+                                        % collect.stderr.decode(errors="replace").strip())
     finally:
         docker("rm", "--force", name)
 
     outcome = _read_json(os.path.join(out_dir, "_outcome.json")) or {
         "verdict": "INSUFFICIENT EVIDENCE",
-        "reason": "container produced no outcome file",
+        "reason": "time limit exceeded" if timed_out
+        else "container produced no outcome file",
         "detail": logs[-4000:],
     }
     container_side = _read_json(os.path.join(out_dir, "_container.json")) or {}
@@ -294,7 +329,8 @@ def score_in_container(tool, finding_id="finding-01", patch=None,
             "wall_seconds": round(elapsed, 2),
         },
         "container_observed": container_side,
-        "exit_code": run.returncode,
+        "exit_code": run.returncode if run is not None else None,
+        "timed_out": timed_out,
     }
     return outcome, provenance, out_dir
 

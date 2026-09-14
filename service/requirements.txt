@@ -1,0 +1,6 @@
+# The scoring API. No provider keys, no database driver: the store is SQLite
+# from the standard library, and the checks come from the repo's own harness.
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+anyio==4.7.0
+pydantic==2.10.4

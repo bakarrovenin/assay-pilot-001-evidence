@@ -1,0 +1,120 @@
+# Benchmark scoring service
+
+A small HTTP API that scores a submitted patch against the public benchmark
+corpus and stores the verdict for the leaderboard. It reuses the pilot harness
+exactly: the four checks, the no-egress container and the teardown are
+`harness/container.py` and `harness/scoring.py`, unchanged. This service only
+hands the harness a benchmark finding and a patch, under resource caps, and
+translates the evidence artifact into the shape the front end renders.
+
+    POST /score        {finding, patch, tool, version} -> verdict + checks
+    GET  /leaderboard  server-side aggregate, recounted from stored rows
+    GET  /result/{id}  one stored result
+    GET  /healthz      liveness, and whether the scorer image is present
+
+## How the untrusted code is contained
+
+The patch runs only inside the scoring container the harness creates:
+
+- `--network none`, no bind mounts, image pinned by digest, removed after the
+  run (`harness/container.py`).
+- memory 768m with swap disabled, 1.0 CPU, 256 pids, and a 150s hard timeout
+  that kills and tears down a hung run (`scorer.LIMITS`; the caps are an
+  additive, default-off parameter on `score_in_container`, so the pilot and its
+  parity gates are unchanged).
+- one untrusted run at a time process-wide, and the API admits at most
+  `ASSAY_MAX_WAITERS` requests to the scoring stage before returning 429.
+- per-IP rate limit (`ASSAY_RATE_PER_HOUR`, default 12/hour).
+- input caps: 64 KB patch, finding allow-list, tool/version length.
+- no secrets: the process needs no keys, tokens or credentials.
+- nothing from the patch is persisted. The patch is written to a temp file only
+  so the harness can tar it into the container, then deleted; the database
+  stores the tool, version, verdict, failure class, the four checks and a
+  timestamp, never the patch text.
+
+## What infrastructure this needs
+
+One small always-on Linux VM that can run Docker. That is the whole
+requirement. The API process runs on the host as a non-root user in the
+`docker` group and spawns one scoring container per request; the patched code
+never executes in the API process, only inside the no-egress container.
+
+Serverless (Lambda, Cloud Run) is a poor fit: the service needs to start
+Docker containers with `--network none` and resource caps, which nested
+container runtimes either forbid or make fragile. A plain VM with Docker is the
+simplest thing that is not a laptop.
+
+### Recommended: one small VM
+
+| Provider | Instance | vCPU / RAM | ~cost / month |
+|---|---|---|---|
+| **Hetzner Cloud** (recommended) | CX22 | 2 / 4 GB | ~4.50 EUR (~5 USD) |
+| DigitalOcean | Basic droplet | 2 / 4 GB | ~24 USD |
+| AWS Lightsail | 2 GB plan | 2 / 2 GB | ~12 USD |
+| Fly.io | shared-cpu-1x, 1 GB | 1 / 1 GB | ~4-6 USD (Docker-in-Docker needs a privileged setup; the VM options above are simpler) |
+
+2 vCPU / 4 GB is comfortable: scoring is single-flight and a run uses under
+768 MB and one core for a few seconds. 2 GB works; 4 GB gives headroom for the
+scanner. Disk: 20-40 GB (the scorer image plus SQLite). Egress is negligible.
+
+**Bottom line: about 5 USD a month on Hetzner**, more on the US clouds. Nothing
+scales with traffic except that heavy load queues behind the single-flight
+lock and returns 429, which is the intended back-pressure rather than a bigger
+bill.
+
+## Deploy
+
+On a fresh Ubuntu VM (as root, then a service user):
+
+    # 1. Docker
+    curl -fsSL https://get.docker.com | sh
+
+    # 2. a non-root service user in the docker group
+    useradd -m -G docker assay
+    mkdir -p /opt/assay-benchmark-data && chown assay:docker /opt/assay-benchmark-data
+
+    # 3. the public evidence repo (harness + benchmark corpus, no secrets)
+    git clone https://github.com/bakarrovenin/assay-pilot-001-evidence /opt/assay-pilot-001
+    chown -R assay:docker /opt/assay-pilot-001
+
+    # 4. as the assay user: build the pinned scorer image once, and the API venv
+    su - assay
+    cd /opt/assay-pilot-001
+    docker build -t assay-pilot-001/scorer:1 -f container/Dockerfile .
+    python3 -m venv .venv-service
+    .venv-service/bin/pip install -r service/requirements.txt
+    exit
+
+    # 5. the service
+    cp /opt/assay-pilot-001/service/assay-benchmark.service /etc/systemd/system/
+    systemctl enable --now assay-benchmark
+
+The unit binds to 127.0.0.1:8080. Put a TLS reverse proxy in front (Caddy is
+one line, or nginx) terminating HTTPS on a subdomain such as
+`YOUR-API-HOST`, and set `ASSAY_ALLOWED_ORIGINS=https://assay.website`
+so only the site can call it from a browser. Point the front end at that URL
+(`PUBLIC_BENCHMARK_API` at build time).
+
+Smoke test:
+
+    curl https://YOUR-API-HOST/healthz
+    # {"ok": true, "scorer_image": true}
+
+## Configuration (all env, no secrets)
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `ASSAY_MANIFEST` | `benchmark/edition-01/manifest.json` | which corpus to score |
+| `ASSAY_ALLOWED_ORIGINS` | `https://assay.website,http://localhost:4321` | CORS allow-list |
+| `ASSAY_TRUST_PROXY` | unset | read client IP from `X-Forwarded-For` when behind a proxy |
+| `ASSAY_RATE_PER_HOUR` | `12` | per-IP score limit |
+| `ASSAY_MAX_WAITERS` | `3` | requests admitted to the scoring stage before 429 |
+| `ASSAY_MAX_PATCH_BYTES` | `65536` | max patch size |
+| `ASSAY_BENCHMARK_DB` | `service/results.db` | SQLite path |
+
+## Rotating the corpus
+
+Each edition is its own manifest. Point `ASSAY_MANIFEST` at
+`benchmark/edition-02/manifest.json` when it exists, restart, and the service
+scores the new edition. Results carry no edition tag yet; add one to the store
+schema when edition 2 ships so the leaderboard can separate them.

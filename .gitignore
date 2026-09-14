@@ -23,3 +23,7 @@ __pycache__/
 
 # Scratch
 *.log
+
+service/_patches/
+.venv-service/
+service/results.db
