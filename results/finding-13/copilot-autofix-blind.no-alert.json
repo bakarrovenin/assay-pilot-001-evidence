@@ -1,0 +1,19 @@
+{
+  "finding": "finding-13",
+  "tool": "copilot-autofix-blind",
+  "outcome": "no-alert-raised",
+  "run": "blind re-run on the stripped corpus (note 12), handoff set-c",
+  "distinct_from": "INSUFFICIENT EVIDENCE. The harness produced no verdict here because the fixer produced no patch, and the fixer produced no patch because the scanner raised no alert. Nothing about a patch was tested; there was no patch. This is upstream of the four checks, not a failure inside them, and must not be counted as insufficient or as a NOT VERIFIED.",
+  "fixer": "GitHub Copilot Autofix",
+  "engine": "CodeQL Default setup",
+  "codeql_version": "CodeQL 2.27.0",
+  "query_suite": "default",
+  "threat_model": "remote",
+  "ruleset_that_ran": "CodeQL default query suite for Python (43 rules, analysis category /language:python), 0 results",
+  "expected_rule_that_did_not_fire": "py/sql-injection",
+  "why": "Second-order flaw. Input enters set_favourite, is stored via a parameterised INSERT in remember_favourite, and reaches the interpolated sink in show_favourite, a different function, after a round trip through the favourites table. CodeQL Default setup did not track the taint across the database store and reload, so it raised no alert.",
+  "reproduces": "The Phase C no-alert (results/finding-13/copilot-autofix.no-alert.json, provisional) on the stripped module: same CodeQL version, suite and threat model, with no docstring and no sink comment present. The no-alert is the taint tracking, not anything in the prose.",
+  "source_repo": "https://github.com/bakarrovenin/assay-autofix-blind-finding-13",
+  "date": "2026-09-14",
+  "recorded_utc": "2026-09-14T14:47:13Z"
+}

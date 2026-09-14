@@ -49,6 +49,22 @@ vendor output.
   `.orig` and `finding-NN.patch` files the tool left in the bundles were not
   used.
 
+## Blind re-run (stripped corpus, note 12)
+
+Tool keys carry the suffix `-blind` so a blind cell never merges with the
+provisional cell of the same tool in the matrix, and the two can be read side
+by side in the report.
+
+- `copilot-autofix-blind`: **GitHub Copilot Autofix**, engine **CodeQL
+  Default setup**, **CodeQL 2.27.0**, default suite, threat model remote,
+  2026-09-14, handoff set-c, one throwaway public repo per finding
+  (`bakarrovenin/assay-autofix-blind-finding-{04,08,13}`). Findings 04 and 08
+  raised `py/sql-injection` at the sink; neither fix auto-generated, both
+  required an explicit generate request (POST autofix), then were committed
+  to an `autofix-suggestion` branch and diffed against main. Finding 13 raised
+  **no alert** (43 rules, 0 results), reproducing the Phase C no-alert on the
+  stripped module: `results/finding-13/copilot-autofix-blind.no-alert.json`.
+
 ## Provisional: every patch on findings 04, 08 and 13
 
 Every patch on findings 04, 08 and 13, real and probe, was cut against a

@@ -1,0 +1,15 @@
+diff --git a/app/finding_08.py b/app/finding_08.py
+index 95579c6..cf59ca2 100644
+--- a/app/finding_08.py
++++ b/app/finding_08.py
+@@ -34,6 +34,10 @@ def catalog():
+     column = spec[1:] if descending else spec
+     direction = "DESC" if descending else "ASC"
+ 
++    allowed_columns = {"id", "name", "price"}
++    if column not in allowed_columns:
++        column = "name"
++
+     conn = get_connection()
+     cur = conn.cursor()
+ 

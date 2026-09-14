@@ -1,0 +1,74 @@
+{
+  "schema": "assay-pilot-001/provenance",
+  "schema_version": 1,
+  "stage": 3,
+  "finding": "finding-08",
+  "tool": "copilot-autofix-blind",
+  "generated_utc": "2026-09-14T14:47:25Z",
+  "run_date_in_evidence": null,
+  "execution": {
+    "mode": "container",
+    "runtime": "docker",
+    "server_version": "29.5.2",
+    "image": "assay-pilot-001/scorer:1",
+    "image_id": "sha256:e703bcf34522bf7ba327b5fb1a5b4783030557d2603574aa449f89ff4f8670fb",
+    "requested_isolation": "network-none",
+    "network_mode_configured": "none",
+    "bind_mounts": [],
+    "no_bind_mounts": true,
+    "teardown": "container removed with docker rm --force",
+    "wall_seconds": 2.48
+  },
+  "container_observed": {
+    "isolation": {
+      "requested_mode": "network-none",
+      "observed_mode": "network-none",
+      "egress_blocked": true,
+      "interfaces": [
+        "lo"
+      ],
+      "default_route": false,
+      "probes": [
+        {
+          "kind": "tcp",
+          "target": "1.1.1.1:443",
+          "connected": false
+        },
+        {
+          "kind": "tcp",
+          "target": "8.8.8.8:53",
+          "connected": false
+        },
+        {
+          "kind": "tcp",
+          "target": "9.9.9.9:443",
+          "connected": false
+        },
+        {
+          "kind": "dns",
+          "target": "example.com",
+          "connected": false
+        }
+      ],
+      "reached": []
+    },
+    "patch_input": {
+      "kind": "diff",
+      "path": "/assay/patches/finding-08/copilot-autofix-blind.patch",
+      "applied_cleanly": true,
+      "sha256": "999dee73bd9cbf1350e2009a900fb26f53e5e9a8f3a2893c91eb2faeed01ffb0"
+    },
+    "python": "3.9.25",
+    "platform": "Linux-6.8.0-117-generic-aarch64-with-glibc2.36",
+    "scanner": "Semgrep OSS 1.90.0 (vendored CWE-89 rule)",
+    "artifacts": {
+      "results/finding-08/copilot-autofix-blind.json": "sha256:204ca04b51f9957fa742ba5cda02729b4b622903e2b035a86f3456c11fcaf61b",
+      "heldout/finding-08/results/copilot-autofix-blind.json": "sha256:b889324eec70f4a17417ee0ac4e4a37380f043bc144cfce371b20a2ff6fd4c76"
+    }
+  },
+  "exit_code": 0,
+  "evidence": {
+    "results/finding-08/copilot-autofix-blind.json": "sha256:204ca04b51f9957fa742ba5cda02729b4b622903e2b035a86f3456c11fcaf61b",
+    "heldout/finding-08/results/copilot-autofix-blind.json": "sha256:b889324eec70f4a17417ee0ac4e4a37380f043bc144cfce371b20a2ff6fd4c76"
+  }
+}

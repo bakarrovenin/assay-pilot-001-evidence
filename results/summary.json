@@ -2,7 +2,7 @@
   "schema": "assay-pilot-001/summary",
   "schema_version": 1,
   "pilot": "assay-pilot-001",
-  "generated_utc": "2026-09-14T10:51:15Z",
+  "generated_utc": "2026-09-14T14:47:26Z",
   "scanner": "Semgrep OSS 1.90.0 (vendored CWE-89 rule)",
   "coverage": {
     "findings_built": 4,
@@ -10,6 +10,7 @@
     "tools": [
       "claude-code",
       "copilot-autofix",
+      "copilot-autofix-blind",
       "cursor",
       "fixer-01",
       "fixer-02",
@@ -17,10 +18,10 @@
       "lazy-string-match",
       "lazy-suppression"
     ],
-    "cells_possible": 32,
-    "cells_supplied": 15,
-    "cells_run": 15,
-    "cells_no_alert": 1
+    "cells_possible": 36,
+    "cells_supplied": 17,
+    "cells_run": 17,
+    "cells_no_alert": 2
   },
   "denominators": {
     "alert_closed_rate": "alert closed / scored",
@@ -36,7 +37,8 @@
         "run": 3,
         "scored": 3,
         "insufficient": 0,
-        "no_alert": 0
+        "no_alert": 0,
+        "provisional": 3
       },
       "alert_closed": 2,
       "verified": 3,
@@ -52,7 +54,27 @@
         "run": 2,
         "scored": 2,
         "insufficient": 0,
-        "no_alert": 1
+        "no_alert": 1,
+        "provisional": 3
+      },
+      "alert_closed": 1,
+      "verified": 1,
+      "alert_closed_rate": 0.5,
+      "verified_fix_rate": 0.5,
+      "gap": 0.0,
+      "insufficient_rate": 0.0,
+      "failure_classes": {
+        "over-broad": 1
+      }
+    },
+    "copilot-autofix-blind": {
+      "cells": {
+        "supplied": 2,
+        "run": 2,
+        "scored": 2,
+        "insufficient": 0,
+        "no_alert": 1,
+        "provisional": 0
       },
       "alert_closed": 1,
       "verified": 1,
@@ -70,7 +92,8 @@
         "run": 3,
         "scored": 3,
         "insufficient": 0,
-        "no_alert": 0
+        "no_alert": 0,
+        "provisional": 3
       },
       "alert_closed": 2,
       "verified": 2,
@@ -88,7 +111,8 @@
         "run": 1,
         "scored": 1,
         "insufficient": 0,
-        "no_alert": 0
+        "no_alert": 0,
+        "provisional": 0
       },
       "alert_closed": 1,
       "verified": 1,
@@ -104,7 +128,8 @@
         "run": 1,
         "scored": 1,
         "insufficient": 0,
-        "no_alert": 0
+        "no_alert": 0,
+        "provisional": 0
       },
       "alert_closed": 0,
       "verified": 0,
@@ -122,7 +147,8 @@
         "run": 1,
         "scored": 1,
         "insufficient": 0,
-        "no_alert": 0
+        "no_alert": 0,
+        "provisional": 0
       },
       "alert_closed": 1,
       "verified": 0,
@@ -140,7 +166,8 @@
         "run": 2,
         "scored": 2,
         "insufficient": 0,
-        "no_alert": 0
+        "no_alert": 0,
+        "provisional": 2
       },
       "alert_closed": 0,
       "verified": 0,
@@ -159,7 +186,8 @@
         "run": 2,
         "scored": 2,
         "insufficient": 0,
-        "no_alert": 0
+        "no_alert": 0,
+        "provisional": 2
       },
       "alert_closed": 2,
       "verified": 0,
@@ -174,24 +202,71 @@
   },
   "overall": {
     "cells": {
-      "supplied": 15,
-      "run": 15,
-      "scored": 15,
+      "supplied": 17,
+      "run": 17,
+      "scored": 17,
       "insufficient": 0,
-      "no_alert": 1
+      "no_alert": 2,
+      "provisional": 13
     },
-    "alert_closed": 9,
-    "verified": 7,
-    "alert_closed_rate": 0.6,
-    "verified_fix_rate": 0.4666666666666667,
-    "gap": 0.1333333333333333,
+    "alert_closed": 10,
+    "verified": 8,
+    "alert_closed_rate": 0.5882352941176471,
+    "verified_fix_rate": 0.47058823529411764,
+    "gap": 0.11764705882352944,
     "insufficient_rate": 0.0,
     "failure_classes": {
-      "over-broad": 2,
+      "over-broad": 3,
       "string-match": 1,
       "string-match-and-over-broad": 2,
       "suppression-in-effect": 3
     }
+  },
+  "by_run": {
+    "provisional": {
+      "cells": {
+        "supplied": 12,
+        "run": 12,
+        "scored": 12,
+        "insufficient": 0,
+        "no_alert": 1,
+        "provisional": 13
+      },
+      "alert_closed": 7,
+      "verified": 6,
+      "alert_closed_rate": 0.5833333333333334,
+      "verified_fix_rate": 0.5,
+      "gap": 0.08333333333333337,
+      "insufficient_rate": 0.0,
+      "failure_classes": {
+        "over-broad": 2,
+        "string-match": 1,
+        "string-match-and-over-broad": 1,
+        "suppression-in-effect": 2
+      }
+    },
+    "standing": {
+      "cells": {
+        "supplied": 5,
+        "run": 5,
+        "scored": 5,
+        "insufficient": 0,
+        "no_alert": 1,
+        "provisional": 0
+      },
+      "alert_closed": 3,
+      "verified": 2,
+      "alert_closed_rate": 0.6,
+      "verified_fix_rate": 0.4,
+      "gap": 0.19999999999999996,
+      "insufficient_rate": 0.0,
+      "failure_classes": {
+        "over-broad": 1,
+        "string-match-and-over-broad": 1,
+        "suppression-in-effect": 1
+      }
+    },
+    "note": "provisional: cells produced against a corpus whose modules contained prose naming the flaw and the fix (note 12); a valid test of the harness, an invalid measurement of the tools. standing: every other cell. The two are never merged in a rate; the overall row above pools them and is kept for the recount only."
   },
   "not_measured": [
     "median patch latency: the harness does not call the fixers, so it never observes generation time",
@@ -199,7 +274,8 @@
   ],
   "caveats": [
     "Coverage is partial. 4 of the 15 findings in the corpus are built, so every number here describes those 4 findings and says nothing about the shapes not yet written: numeric context, LIKE, ORDER BY, multi-parameter, ORM, second order, multi-hop. The gap is expected to be larger in the harder shapes, which is a reason to distrust this number as an estimate of the whole.",
-    "These rows are counts, not rates: copilot-autofix, fixer-01, fixer-02, fixer-03, lazy-string-match, lazy-suppression. Each was scored on fewer than 3 cells, so the percentage restates one or two results and can only move in whole steps. Read the per cell table instead.",
+    "13 cell(s) are provisional: claude-code, copilot-autofix, cursor, lazy-string-match, lazy-suppression. Each was produced against a corpus whose modules contained prose naming the flaw and the fix (METHODOLOGY-NOTES.md note 12). They are kept, not deleted: a valid test of the harness and an invalid measurement of the tools. They are reported in their own rows and subtotal and are never merged with a blind cell. The blind re-run of a tool is under the same name with the suffix -blind, so the two can be read side by side.",
+    "These rows are counts, not rates: copilot-autofix, copilot-autofix-blind, fixer-01, fixer-02, fixer-03, lazy-string-match, lazy-suppression. Each was scored on fewer than 3 cells, so the percentage restates one or two results and can only move in whole steps. Read the per cell table instead.",
     "The harness does not call the fixers. Tool names are the names of the diff files supplied. Some are illustrative patches we wrote to exercise the method: the finding-01 fixer cells, and the lazy-* probe cells built to test whether the held-out sets catch a lazy fix. Others are real tool output. patches/TOOLS.md says which is which and pins the versions and dates. Either way, with only a few scored cells per tool this is not a vendor comparison and no rate here generalises. See patches/TOOLS.md and README."
   ]
 }

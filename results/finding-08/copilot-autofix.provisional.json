@@ -1,0 +1,14 @@
+{
+  "finding": "finding-08",
+  "tool": "copilot-autofix",
+  "provisional": true,
+  "cell_kind": "scored",
+  "reason": "Produced against a corpus whose modules contained prose naming the flaw and the fix. The module this cell's tool was handed opened with a docstring naming the shape, the sink, the attack that works and the fix that works, and carried a comment above the sink saying \"this is the flaw\" (METHODOLOGY-NOTES.md note 12).",
+  "corpus_state": "modules named the flaw and the fix; stripped on 2026-09-14",
+  "module_as_handed_out": "heldout/finding-08/module_as_handed_out_2026-09-14.py (git-ignored, on the experimenter machine)",
+  "what_it_still_is": "A valid test of the harness: the checks ran, the container was isolated, the evidence is mechanical. An invalid measurement of the tool: the tool was told which fix to write.",
+  "kept_not_deleted": true,
+  "superseded_by": "copilot-autofix-blind",
+  "patch_applies_to_stripped_module": false,
+  "recorded_utc": "2026-09-14T14:46:46Z"
+}

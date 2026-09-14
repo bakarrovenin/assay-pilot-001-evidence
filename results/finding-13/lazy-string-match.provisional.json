@@ -1,0 +1,14 @@
+{
+  "finding": "finding-13",
+  "tool": "lazy-string-match",
+  "provisional": true,
+  "cell_kind": "scored",
+  "reason": "Produced against a corpus whose modules contained prose naming the flaw and the fix. The module this cell's tool was handed opened with a docstring naming the shape, the sink, the attack that works and the fix that works, and carried a comment above the sink saying \"this is the flaw\" (METHODOLOGY-NOTES.md note 12).",
+  "corpus_state": "modules named the flaw and the fix; stripped on 2026-09-14",
+  "module_as_handed_out": "heldout/finding-13/module_as_handed_out_2026-09-14.py (git-ignored, on the experimenter machine)",
+  "what_it_still_is": "A probe patch written by us to test whether the held-out set catches a lazy fix. The corpus state does not change what it tested, but it was produced against the same modules and is flagged so the run is described uniformly.",
+  "kept_not_deleted": true,
+  "superseded_by": null,
+  "patch_applies_to_stripped_module": false,
+  "recorded_utc": "2026-09-14T14:46:46Z"
+}

@@ -1,0 +1,15 @@
+diff --git a/app/finding_04.py b/app/finding_04.py
+index ef3dd12..86c065a 100644
+--- a/app/finding_04.py
++++ b/app/finding_04.py
+@@ -31,8 +31,8 @@ def product_by_id():
+     conn = get_connection()
+     cur = conn.cursor()
+ 
+-    query = f"SELECT id, name, price, category, sku FROM products WHERE id = {pid}"
+-    rows = cur.execute(query).fetchall()
++    query = "SELECT id, name, price, category, sku FROM products WHERE id = ?"
++    rows = cur.execute(query, (pid,)).fetchall()
+     conn.close()
+ 
+     results = [dict(row) for row in rows]

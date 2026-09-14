@@ -84,10 +84,20 @@ def collect():
                 continue
             if name.endswith(".provenance.json"):
                 continue
+            if name.endswith(".provisional.json"):
+                # A flag on a cell, not a cell. Counted so the published
+                # per-tool provisional count and the by-run split can be
+                # checked; never a verdict.
+                stats = per_tool.setdefault(name[:-len(".provisional.json")], _blank())
+                stats["provisional"] += 1
+                continue
             if name.endswith(".insufficient.json"):
                 tool = name[:-len(".insufficient.json")]
                 stats = per_tool.setdefault(tool, _blank())
                 stats["insufficient"] += 1
+                flagged = os.path.exists(os.path.join(
+                    results_dir, tool + ".provisional.json"))
+                stats["runs"]["provisional" if flagged else "standing"]["insufficient"] += 1
                 continue
             if name.endswith(".no-alert.json"):
                 # A distinct outcome: the scanner raised no alert, so the
@@ -102,13 +112,19 @@ def collect():
             data = load(os.path.join(results_dir, name))
             stats = per_tool.setdefault(tool, _blank())
             stats["scored"] += 1
+            flagged = os.path.exists(os.path.join(results_dir,
+                                                  tool + ".provisional.json"))
+            run = stats["runs"]["provisional" if flagged else "standing"]
+            run["scored"] += 1
             if data["verdict"] == "VERIFIED":
                 stats["verified"] += 1
+                run["verified"] += 1
             else:
                 fc = data["failure_class"]
                 stats["classes"][fc] = stats["classes"].get(fc, 0) + 1
             if data["checks"]["A_alert_closed"]["pass"]:
                 stats["alert_closed"] += 1
+                run["alert_closed"] += 1
         for tool, stats in per_tool.items():
             for ext in (".patch", ".py"):
                 if os.path.exists(os.path.join(patches_dir, tool + ext)):
@@ -119,7 +135,12 @@ def collect():
 
 def _blank():
     return {"supplied": 0, "scored": 0, "insufficient": 0, "verified": 0,
-            "alert_closed": 0, "classes": {}}
+            "alert_closed": 0, "classes": {}, "provisional": 0,
+            "runs": {"provisional": _run_blank(), "standing": _run_blank()}}
+
+
+def _run_blank():
+    return {"scored": 0, "insufficient": 0, "verified": 0, "alert_closed": 0}
 
 
 def rate(n, d):
@@ -157,6 +178,10 @@ def check(published, counted):
             if p[key] != c[key]:
                 problems.append("%s %s: published %d, counted %d"
                                 % (tool, key, p[key], c[key]))
+        if p["cells"].get("provisional", 0) != c["provisional"]:
+            problems.append("%s cells.provisional: published %d, counted %d"
+                            % (tool, p["cells"].get("provisional", 0),
+                               c["provisional"]))
         checks = [
             ("alert_closed_rate", rate(c["alert_closed"], c["scored"])),
             ("verified_fix_rate", rate(c["verified"], c["scored"])),
@@ -182,6 +207,9 @@ def check(published, counted):
             total[key] += c[key]
         for fc, n in c["classes"].items():
             total["classes"][fc] = total["classes"].get(fc, 0) + n
+        for run in ("provisional", "standing"):
+            for key in _run_blank():
+                total["runs"][run][key] += c["runs"][run][key]
 
     o = published["overall"]
     for key in ("supplied", "scored", "insufficient"):
@@ -201,6 +229,33 @@ def check(published, counted):
     if o["failure_classes"] != total["classes"]:
         problems.append("overall failure classes: published %r, counted %r"
                         % (o["failure_classes"], total["classes"]))
+
+    # The run split. Provisional cells and standing cells must never merge,
+    # so each subtotal is recounted from the sidecars beside the evidence.
+    by_run = published.get("by_run", {})
+    for run in ("provisional", "standing"):
+        r = by_run.get(run)
+        t = total["runs"][run]
+        if r is None:
+            problems.append("by_run.%s: missing from the published summary"
+                            % run)
+            continue
+        for key in ("scored", "insufficient"):
+            if r["cells"][key] != t[key]:
+                problems.append("by_run.%s cells.%s: published %d, counted %d"
+                                % (run, key, r["cells"][key], t[key]))
+        for key in ("verified", "alert_closed"):
+            if r[key] != t[key]:
+                problems.append("by_run.%s %s: published %d, counted %d"
+                                % (run, key, r[key], t[key]))
+        a = rate(t["alert_closed"], t["scored"])
+        v = rate(t["verified"], t["scored"])
+        for key, expected in (("alert_closed_rate", a),
+                              ("verified_fix_rate", v),
+                              ("gap", None if a is None or v is None else a - v)):
+            if not close(r[key], expected):
+                problems.append("by_run.%s %s: published %r, computed %r"
+                                % (run, key, r[key], expected))
 
     return problems, total
 
@@ -271,6 +326,21 @@ def _drop_tool(s):
     s["coverage"]["tools"] = s["coverage"]["tools"][1:]
 
 
+def _unflag_tool(s):
+    """A provisional cell quietly counted as standing."""
+    for tool in sorted(s["per_tool"]):
+        if s["per_tool"][tool]["cells"].get("provisional"):
+            s["per_tool"][tool]["cells"]["provisional"] -= 1
+            return
+    s["per_tool"][_victim(s)]["cells"]["provisional"] = 1
+
+
+def _merge_runs(s):
+    """A provisional verdict moved into the standing subtotal."""
+    s["by_run"]["standing"]["verified"] += 1
+    s["by_run"]["standing"]["cells"]["scored"] += 1
+
+
 CORRUPTIONS = [
     # label, mutation, direction, substring the complaint must contain
     ("per-tool verified count off by one", _bump_count("verified"),
@@ -300,6 +370,10 @@ CORRUPTIONS = [
      "either", "overall failure classes:"),
     ("a tool dropped from coverage", _drop_tool,
      "flattering", "tool sets differ:"),
+    ("a provisional cell counted as standing", _unflag_tool,
+     "flattering", "cells.provisional:"),
+    ("a provisional verdict merged into the standing subtotal", _merge_runs,
+     "flattering", "by_run.standing"),
 ]
 
 

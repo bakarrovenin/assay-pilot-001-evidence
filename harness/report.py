@@ -70,13 +70,25 @@ def _rate(numerator, denominator):
     return numerator / float(denominator)
 
 
-def _tool_stats(cells, tool):
+def _tool_stats(cells, tool=None, provisional=None):
+    """Counts over the cells of one tool, or of every tool when tool is None.
+
+    provisional=True counts only flagged cells, False only unflagged ones,
+    None both. The split is what keeps a run against the contaminated corpus
+    from ever merging with a blind run in the same rate.
+    """
     supplied = run = scored = insufficient = verified = alert_closed = 0
-    no_alert = 0
+    no_alert = flagged = 0
     failure_classes = {}
     for (_, t), cell in cells.items():
-        if t != tool or not cell.built:
+        if (tool is not None and t != tool) or not cell.built:
             continue
+        is_flagged = cell.provisional is not None
+        if provisional is not None and is_flagged != provisional:
+            continue
+        if is_flagged and cell.state in (matrix.SCORED, matrix.INSUFFICIENT,
+                                         matrix.NO_ALERT):
+            flagged += 1
         if cell.supplied:
             supplied += 1
         state = cell.state
@@ -102,7 +114,8 @@ def _tool_stats(cells, tool):
            else alert_rate - verified_rate)
     return {
         "cells": {"supplied": supplied, "run": run, "scored": scored,
-                  "insufficient": insufficient, "no_alert": no_alert},
+                  "insufficient": insufficient, "no_alert": no_alert,
+                  "provisional": flagged},
         "alert_closed": alert_closed,
         "verified": verified,
         "alert_closed_rate": alert_rate,
@@ -118,7 +131,7 @@ def aggregate(findings, tools, cells, scanner=None):
     per_tool = {tool: _tool_stats(cells, tool) for tool in tools}
 
     pooled = {"supplied": 0, "run": 0, "scored": 0, "insufficient": 0,
-              "no_alert": 0}
+              "no_alert": 0, "provisional": 0}
     verified = alert_closed = 0
     classes = {}
     for stats in per_tool.values():
@@ -167,6 +180,16 @@ def aggregate(findings, tools, cells, scanner=None):
             "insufficient_rate": _rate(pooled["insufficient"], pooled["run"]),
             "failure_classes": dict(sorted(classes.items())),
         },
+        "by_run": {
+            "provisional": _tool_stats(cells, provisional=True),
+            "standing": _tool_stats(cells, provisional=False),
+            "note": "provisional: cells produced against a corpus whose "
+                    "modules contained prose naming the flaw and the fix "
+                    "(note 12); a valid test of the harness, an invalid "
+                    "measurement of the tools. standing: every other cell. "
+                    "The two are never merged in a rate; the overall row "
+                    "above pools them and is kept for the recount only.",
+        },
         "not_measured": NOT_MEASURED,
     }
     summary["caveats"] = caveats(summary)
@@ -201,6 +224,21 @@ def caveats(summary):
             % (n, cov["findings_in_corpus"], "is" if n == 1 else "are",
                "that one finding" if n == 1 else "those %d findings" % n))
 
+    prov = summary.get("by_run", {}).get("provisional", {}).get("cells", {})
+    if prov.get("provisional"):
+        flagged_tools = [t for t in cov["tools"]
+                         if summary["per_tool"][t]["cells"]["provisional"]]
+        out.append(
+            "%d cell(s) are provisional: %s. Each was produced against a "
+            "corpus whose modules contained prose naming the flaw and the "
+            "fix (METHODOLOGY-NOTES.md note 12). They are kept, not deleted: "
+            "a valid test of the harness and an invalid measurement of the "
+            "tools. They are reported in their own rows and subtotal and are "
+            "never merged with a blind cell. The blind re-run of a tool is "
+            "under the same name with the suffix -blind, so the two can be "
+            "read side by side."
+            % (prov["provisional"], ", ".join(flagged_tools)))
+
     thin = [t for t in cov["tools"]
             if summary["per_tool"][t]["cells"]["scored"] < RATE_FLOOR]
     if thin:
@@ -231,6 +269,19 @@ def caveats(summary):
     return out
 
 
+def _run_label(stats):
+    """How a tool's cells split: provisional, standing, or both."""
+    c = stats["cells"]
+    counted = c["scored"] + c["insufficient"] + c["no_alert"]
+    if not counted:
+        return "-"
+    if c["provisional"] == counted:
+        return "provisional"
+    if c["provisional"] == 0:
+        return "standing"
+    return "mixed"
+
+
 def _pct(value):
     return "n/a" if value is None else "%.0f%%" % (value * 100)
 
@@ -259,26 +310,38 @@ def render_table(summary):
                      "INSUFFICIENT EVIDENCE, counted in no rate. See the "
                      ".no-alert.json sidecar for each." % na)
     lines.append("")
-    header = ("%-12s %7s %7s %7s   %11s %11s %9s %9s"
-              % ("tool", "supplied", "scored", "insuff", "alert-closed",
-                 "verified", "gap", "insuff %"))
+    header = ("%-22s %-12s %7s %7s %7s   %11s %11s %9s %9s"
+              % ("tool", "run", "supplied", "scored", "insuff",
+                 "alert-closed", "verified", "gap", "insuff %"))
     lines.append(header)
     lines.append("-" * len(header))
+    row = "%-22s %-12s %7d %7d %7d   %11s %11s %9s %9s"
     for tool in cov["tools"]:
         s = summary["per_tool"][tool]
         c = s["cells"]
-        lines.append("%-12s %7d %7d %7d   %11s %11s %9s %9s"
-                     % (tool, c["supplied"], c["scored"], c["insufficient"],
-                        _pct(s["alert_closed_rate"]),
-                        _pct(s["verified_fix_rate"]),
-                        _pp(s["gap"]), _pct(s["insufficient_rate"])))
+        lines.append(row % (tool, _run_label(s), c["supplied"], c["scored"],
+                            c["insufficient"], _pct(s["alert_closed_rate"]),
+                            _pct(s["verified_fix_rate"]),
+                            _pp(s["gap"]), _pct(s["insufficient_rate"])))
     lines.append("-" * len(header))
+    by_run = summary.get("by_run", {})
+    for label, key in (("PROVISIONAL", "provisional"), ("STANDING", "standing")):
+        r = by_run.get(key)
+        if not r:
+            continue
+        lines.append(row % (label, key, r["cells"]["supplied"],
+                            r["cells"]["scored"], r["cells"]["insufficient"],
+                            _pct(r["alert_closed_rate"]),
+                            _pct(r["verified_fix_rate"]), _pp(r["gap"]),
+                            _pct(r["insufficient_rate"])))
     o = summary["overall"]
-    lines.append("%-12s %7d %7d %7d   %11s %11s %9s %9s"
-                 % ("ALL", o["cells"]["supplied"], o["cells"]["scored"],
-                    o["cells"]["insufficient"], _pct(o["alert_closed_rate"]),
-                    _pct(o["verified_fix_rate"]), _pp(o["gap"]),
-                    _pct(o["insufficient_rate"])))
+    lines.append(row % ("ALL (pooled, recount only)", "both",
+                        o["cells"]["supplied"], o["cells"]["scored"],
+                        o["cells"]["insufficient"], _pct(o["alert_closed_rate"]),
+                        _pct(o["verified_fix_rate"]), _pp(o["gap"]),
+                        _pct(o["insufficient_rate"])))
+    if by_run.get("note"):
+        lines.append("runs: %s" % by_run["note"])
     lines.append("")
     lines.append("failure classes, over patches that were scored NOT VERIFIED")
     if not o["failure_classes"]:
@@ -294,8 +357,12 @@ def render_table(summary):
     for item in summary["not_measured"]:
         lines.append("not measured: %s" % item)
 
-    vr = o["verified_fix_rate"]
+    st = by_run.get("standing") or o
+    vr = st["verified_fix_rate"]
     lines.append("")
+    if by_run.get("standing"):
+        lines.append("headline reads the standing cells only; provisional "
+                     "cells are excluded from it.")
     if vr is None:
         lines.append("No cell produced a verdict, so there is no gap to read "
                      "yet. That is a coverage statement, not a result.")
@@ -306,7 +373,7 @@ def render_table(summary):
     else:
         lines.append("Headline is the gap, not the rate: alert-closed %s "
                      "against verified-fix %s."
-                     % (_pct(o["alert_closed_rate"]), _pct(vr)))
+                     % (_pct(st["alert_closed_rate"]), _pct(vr)))
     return "\n".join(lines)
 
 
@@ -341,24 +408,37 @@ def render_markdown(summary, cells=None, findings=None):
     out.append("")
     out.append("## Rates per tool")
     out.append("")
-    out.append("| Tool | Supplied | Scored | Insufficient | Alert closed | "
+    out.append("| Tool | Run | Supplied | Scored | Insufficient | Alert closed | "
                "Verified fix | Gap | Insufficient rate |")
-    out.append("|---|---|---|---|---|---|---|---|")
+    out.append("|---|---|---|---|---|---|---|---|---|")
     for tool in cov["tools"]:
         s = summary["per_tool"][tool]
         c = s["cells"]
-        out.append("| %s | %d | %d | %d | %s | %s | %s | %s |"
-                   % (tool, c["supplied"], c["scored"], c["insufficient"],
-                      _pct(s["alert_closed_rate"]),
+        out.append("| %s | %s | %d | %d | %d | %s | %s | %s | %s |"
+                   % (tool, _run_label(s), c["supplied"], c["scored"],
+                      c["insufficient"], _pct(s["alert_closed_rate"]),
                       _pct(s["verified_fix_rate"]), _pp(s["gap"]),
                       _pct(s["insufficient_rate"])))
+    by_run = summary.get("by_run", {})
+    for label, key in (("Provisional", "provisional"), ("Standing", "standing")):
+        r = by_run.get(key)
+        if not r:
+            continue
+        out.append("| **%s** | %s | %d | %d | %d | %s | %s | %s | %s |"
+                   % (label, key, r["cells"]["supplied"], r["cells"]["scored"],
+                      r["cells"]["insufficient"], _pct(r["alert_closed_rate"]),
+                      _pct(r["verified_fix_rate"]), _pp(r["gap"]),
+                      _pct(r["insufficient_rate"])))
     o = summary["overall"]
-    out.append("| **All** | %d | %d | %d | %s | %s | %s | %s |"
+    out.append("| **All (pooled, recount only)** | both | %d | %d | %d | %s | %s | %s | %s |"
                % (o["cells"]["supplied"], o["cells"]["scored"],
                   o["cells"]["insufficient"], _pct(o["alert_closed_rate"]),
                   _pct(o["verified_fix_rate"]), _pp(o["gap"]),
                   _pct(o["insufficient_rate"])))
     out.append("")
+    if by_run.get("note"):
+        out.append("Runs: %s" % by_run["note"])
+        out.append("")
     out.append("Denominators: alert-closed rate and verified-fix rate are over "
                "cells that produced a verdict. A run that produced no verdict "
                "has no check A result and is counted only in the insufficient "
@@ -379,8 +459,8 @@ def render_markdown(summary, cells=None, findings=None):
     if cells and findings:
         out.append("## Per cell")
         out.append("")
-        out.append("| Finding | Tool | A | B | C | D | Verdict | Class |")
-        out.append("|---|---|---|---|---|---|---|---|")
+        out.append("| Finding | Tool | Run | A | B | C | D | Verdict | Class |")
+        out.append("|---|---|---|---|---|---|---|---|---|")
         for finding in findings:
             if finding.status != "built":
                 continue
@@ -389,22 +469,23 @@ def render_markdown(summary, cells=None, findings=None):
                 if cell is None or cell.state in (matrix.NOT_SUPPLIED,
                                                   matrix.NOT_RUN):
                     continue
+                run = "provisional" if cell.provisional else "standing"
                 if cell.state == matrix.INSUFFICIENT:
-                    out.append("| %s | %s | . | . | . | . | INSUFFICIENT "
+                    out.append("| %s | %s | %s | . | . | . | . | INSUFFICIENT "
                                "EVIDENCE | %s |"
-                               % (finding.id, tool,
+                               % (finding.id, tool, run,
                                   (cell.insufficient or {}).get("reason", "")))
                     continue
                 if cell.state == matrix.NO_ALERT:
-                    out.append("| %s | %s | . | . | . | . | no alert raised | %s |"
-                               % (finding.id, tool,
+                    out.append("| %s | %s | %s | . | . | . | . | no alert raised | %s |"
+                               % (finding.id, tool, run,
                                   (cell.no_alert or {}).get(
                                       "expected_rule_that_did_not_fire", "")))
                     continue
                 c = cell.evidence["checks"]
                 mark = lambda ok: "pass" if ok else "fail"
-                out.append("| %s | %s | %s | %s | %s | %s | %s | %s |"
-                           % (finding.id, tool,
+                out.append("| %s | %s | %s | %s | %s | %s | %s | %s | %s |"
+                           % (finding.id, tool, run,
                               mark(c["A_alert_closed"]["pass"]),
                               mark(c["B_hole_shut"]["pass"]),
                               mark(c["C_behaviour_preserved"]["pass"]),

@@ -28,6 +28,17 @@ across tools; keeping generation outside the harness is how that stays true.
   not-supplied  no diff on disk for this cell
   not-built     the finding is a structural placeholder, nothing to score
 
+## Provisional is a flag on a cell, not a state
+
+A cell in any of the first three states can also be provisional: it was
+produced against a corpus whose modules named their own flaw and fix
+(METHODOLOGY-NOTES.md note 12). The result is kept, because it is a valid
+test of the harness, and flagged, because it is an invalid measurement of the
+tool. The flag lives in a sidecar, results/<finding>/<tool>.provisional.json,
+so the evidence file and the provenance that hashes it are untouched. The
+report splits every rate by the flag and never merges a provisional cell
+with a blind one.
+
 Only the first two belong in any rate. A tool that was never given a patch for
 finding 7 has not failed finding 7, and quietly folding those cells into a
 denominator would understate every tool that was tested on fewer findings. The
@@ -69,6 +80,7 @@ class Cell(object):
         self.evidence = None
         self.insufficient = None
         self.no_alert = None
+        self.provisional = None
 
     @property
     def supplied(self):
@@ -138,6 +150,11 @@ def no_alert_path(finding, tool, root=ROOT):
     return os.path.join(root, finding.results_dir, tool + ".no-alert.json")
 
 
+def provisional_path(finding, tool, root=ROOT):
+    """Where a cell is flagged provisional. A sidecar, never a field."""
+    return os.path.join(root, finding.results_dir, tool + ".provisional.json")
+
+
 def discover_tools(findings, root=ROOT):
     """Every tool name that has supplied at least one patch anywhere."""
     tools = set()
@@ -204,3 +221,7 @@ def _load_existing(cell, finding, root):
     elif os.path.exists(na):
         with open(na, encoding="utf-8") as f:
             cell.no_alert = json.load(f)
+    pv = provisional_path(finding, cell.tool, root)
+    if os.path.exists(pv):
+        with open(pv, encoding="utf-8") as f:
+            cell.provisional = json.load(f)
