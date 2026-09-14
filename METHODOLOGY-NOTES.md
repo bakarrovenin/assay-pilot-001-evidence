@@ -813,3 +813,75 @@ squash message, so the public history begins at the stripped state and never
 carries the docstrings. The granular history is kept on the experimenter
 machine as the local branch pre-squash-local, beside the held-out material,
 and is not pushed. The extended history guard passes on what was pushed.
+
+## Note 13: a real fixer closed the alert by reformatting the query, and check A cannot be trusted in either direction
+
+Found on 2026-09-14 scoring the ChatGPT blind batch on finding-08.
+
+ChatGPT's patch allow-listed the column and, in the same edit, split the
+query from one f-string into two adjacent f-strings inside parentheses:
+
+    query = (
+        f"SELECT id, name, {column} AS featured "
+        f"FROM products ORDER BY {column} {direction}"
+    )
+
+The interpolation is unchanged. The column is still formatted into the SQL
+in two places. But the vendored Semgrep rule matches a single formatted
+string reaching execute(), and implicit concatenation of two f-strings is a
+different AST node, so it no longer matches. Check A recorded 0 findings.
+
+The cell is NOT VERIFIED on check C (the allow-list is {id, name, price},
+note 12's third instance of that set), and it is benign as far as check A is
+concerned: the allow-list shut the hole, check B is 0 of 11, so this is not
+suppression in effect and check D did not fire. Nothing about the verdict
+turns on it, and for this shape check A is informational anyway (note 11).
+
+### The 2x2
+
+To separate the fix from the formatting, the pinned rule was run over four
+versions of the finding-08 module:
+
+  hole    formatting                  Semgrep
+  open    one f-string (as committed) 1
+  open    two f-strings, no fix       0
+  shut    allow-list, one f-string    1     (Cursor's shape, note 9)
+  shut    allow-list, two f-strings   0     (ChatGPT's patch)
+
+The scanner's answer is decided entirely by the second column. Whether the
+hole is shut does not enter into it. A correct fix and an evasion are the
+same thing to the rule: an evasion that leaves the hole open reads as
+closed, and a fix that leaves the f-string alone reads as open.
+
+### Note 2 arriving on its own
+
+Note 2 recorded this mechanism, the alert closing because the query was
+rebuilt into a shape the rule does not match, and it was demonstrated with
+fixer-03 and later the lazy-suppression probes, all written by us to show
+that check B was needed. This is the first time the mechanism has appeared
+in real tool output, unprompted, from a tool that was not trying to evade
+anything. ChatGPT reformatted a long line. That was enough.
+
+It did not matter here because the same patch also shut the hole. It would
+have mattered if it had not, and nothing in the scanner would have said so.
+
+### What this means for check A
+
+Check A now has a documented false negative in real output (this note) and
+a documented false positive in real output (note 9, Cursor's correct
+allow-list flagged). Both directions, both from real tools, both on the same
+finding. So check A is not a weak signal that is right more often than
+wrong; it is a signal about the syntax of the line, which is correlated with
+the fix only when the fixer happens to change the syntax and the hole
+together.
+
+Check A stays in the harness. It is what the industry counts, and the gap
+between it and check B is the pilot's headline; a check that cannot be
+trusted is exactly the check whose disagreement with the held-out set is
+worth publishing. It gates the verdict only where a correct fix must close
+the alert (note 11), it feeds suppression-in-effect, and it is otherwise
+recorded and not believed.
+
+The finding for the write-up is one sentence: the scanner cannot tell a fix
+from a reformat, so alert-closed is a fact about the diff, not about the
+hole.
