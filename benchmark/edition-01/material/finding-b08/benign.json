@@ -1,0 +1,71 @@
+{
+  "finding": "finding-b08",
+  "benign": [
+    {
+      "id": "b01",
+      "input": "title",
+      "kind": "match",
+      "note": "default column ascending"
+    },
+    {
+      "id": "b02",
+      "input": "-title",
+      "kind": "match",
+      "note": "descending"
+    },
+    {
+      "id": "b03",
+      "input": "author",
+      "kind": "match",
+      "note": "by author"
+    },
+    {
+      "id": "b04",
+      "input": "-author",
+      "kind": "match",
+      "note": "by author descending"
+    },
+    {
+      "id": "b05",
+      "input": "id",
+      "kind": "match",
+      "note": "by id"
+    },
+    {
+      "id": "b06",
+      "input": "shelf",
+      "kind": "match",
+      "note": "less-obvious column shelf"
+    },
+    {
+      "id": "b07",
+      "input": "-shelf",
+      "kind": "match",
+      "note": "shelf descending"
+    },
+    {
+      "id": "b08",
+      "input": "isbn",
+      "kind": "match",
+      "note": "less-obvious column isbn"
+    },
+    {
+      "id": "b09",
+      "input": "-isbn",
+      "kind": "match",
+      "note": "isbn descending"
+    },
+    {
+      "id": "b10",
+      "input": "copies",
+      "kind": "match",
+      "note": "less-obvious column copies"
+    },
+    {
+      "id": "b11",
+      "input": "-copies",
+      "kind": "match",
+      "note": "copies descending"
+    }
+  ]
+}

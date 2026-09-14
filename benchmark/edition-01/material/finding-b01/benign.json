@@ -1,0 +1,71 @@
+{
+  "finding": "finding-b01",
+  "benign": [
+    {
+      "id": "b01",
+      "input": "Refactoring",
+      "kind": "match",
+      "note": "ordinary title"
+    },
+    {
+      "id": "b02",
+      "input": "Clean Code",
+      "kind": "match",
+      "note": "two words"
+    },
+    {
+      "id": "b03",
+      "input": "The Pragmatic Programmer",
+      "kind": "match",
+      "note": "three words"
+    },
+    {
+      "id": "b04",
+      "input": "Child's Garden of Verses",
+      "kind": "match",
+      "note": "legitimate apostrophe"
+    },
+    {
+      "id": "b05",
+      "input": "Winnie-the-Pooh",
+      "kind": "match",
+      "note": "hyphens"
+    },
+    {
+      "id": "b06",
+      "input": "100% Pure Adrenaline",
+      "kind": "match",
+      "note": "percent sign"
+    },
+    {
+      "id": "b07",
+      "input": "Café Society",
+      "kind": "match",
+      "note": "accented unicode"
+    },
+    {
+      "id": "b08",
+      "input": "C++ Primer",
+      "kind": "match",
+      "note": "plus signs"
+    },
+    {
+      "id": "b09",
+      "input": "The A-Team Companion",
+      "kind": "match",
+      "note": "hyphen and capitals"
+    },
+    {
+      "id": "b10",
+      "input": "Gödel, Escher, Bach",
+      "kind": "match",
+      "note": "umlaut and commas"
+    },
+    {
+      "id": "b11",
+      "input": "No Such Title Here",
+      "kind": "miss",
+      "note": "legitimate empty result"
+    }
+  ]
+}

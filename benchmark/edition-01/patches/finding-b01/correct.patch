@@ -1,0 +1,13 @@
+--- a/finding_b01.py	2026-09-15 00:26:58
++++ b/finding_b01.py	2026-09-15 00:34:52
+@@ -31,8 +31,8 @@
+     conn = get_connection()
+     cur = conn.cursor()
+ 
+-    query = f"SELECT id, title, author, shelf, isbn FROM books WHERE title = '{title}'"
+-    rows = cur.execute(query).fetchall()
++    query = "SELECT id, title, author, shelf, isbn FROM books WHERE title = ?"
++    rows = cur.execute(query, (title,)).fetchall()
+     conn.close()
+ 
+     results = [dict(row) for row in rows]

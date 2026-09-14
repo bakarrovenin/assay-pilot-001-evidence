@@ -1,0 +1,71 @@
+{
+  "finding": "finding-b04",
+  "benign": [
+    {
+      "id": "b01",
+      "input": "1",
+      "kind": "match",
+      "note": "member 1"
+    },
+    {
+      "id": "b02",
+      "input": "2",
+      "kind": "match",
+      "note": "member 2"
+    },
+    {
+      "id": "b03",
+      "input": "3",
+      "kind": "match",
+      "note": "member 3"
+    },
+    {
+      "id": "b04",
+      "input": "4",
+      "kind": "match",
+      "note": "member 4"
+    },
+    {
+      "id": "b05",
+      "input": "5",
+      "kind": "match",
+      "note": "member 5"
+    },
+    {
+      "id": "b06",
+      "input": "0",
+      "kind": "miss",
+      "note": "no member 0"
+    },
+    {
+      "id": "b07",
+      "input": "6",
+      "kind": "miss",
+      "note": "above the range"
+    },
+    {
+      "id": "b08",
+      "input": "99",
+      "kind": "miss",
+      "note": "far above the range"
+    },
+    {
+      "id": "b09",
+      "input": "-1",
+      "kind": "miss",
+      "note": "negative id, legitimate empty result"
+    },
+    {
+      "id": "b10",
+      "input": "007",
+      "kind": "miss",
+      "note": "leading zeros"
+    },
+    {
+      "id": "b11",
+      "input": "10",
+      "kind": "miss",
+      "note": "two digits, empty"
+    }
+  ]
+}

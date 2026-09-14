@@ -1,0 +1,82 @@
+{
+  "$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/schemas/sarif-schema-2.1.0.json",
+  "runs": [
+    {
+      "invocations": [
+        {
+          "executionSuccessful": true,
+          "toolExecutionNotifications": []
+        }
+      ],
+      "results": [
+        {
+          "fingerprints": {
+            "matchBasedId/v1": "628d05e5e9ebffb5dd77771f6971eeaf8d0134d681c4ecf37009551753997b19a2887e9a721ae4fe6774f8c4010c02972c93279edd139e3d41d3b93c4f309383_0"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "benchmark/edition-01/app/finding_b01.py",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "endColumn": 30,
+                  "endLine": 35,
+                  "snippet": {
+                    "text": "    rows = cur.execute(query).fetchall()"
+                  },
+                  "startColumn": 12,
+                  "startLine": 35
+                }
+              }
+            }
+          ],
+          "message": {
+            "text": "Detected possible formatted SQL query. Use parameterized queries instead."
+          },
+          "properties": {},
+          "ruleId": "scanner.rules.python.lang.security.audit.formatted-sql-query.formatted-sql-query"
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "Semgrep OSS",
+          "rules": [
+            {
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "fullDescription": {
+                "text": "Detected possible formatted SQL query. Use parameterized queries instead."
+              },
+              "help": {
+                "markdown": "Detected possible formatted SQL query. Use parameterized queries instead.\n\n<b>References:</b>\n - [Semgrep Rule](https://semgrep.dev/r/python.lang.security.audit.formatted-sql-query.formatted-sql-query)\n - [https://stackoverflow.com/questions/775296/mysql-parameterized-queries](https://stackoverflow.com/questions/775296/mysql-parameterized-queries)\n",
+                "text": "Detected possible formatted SQL query. Use parameterized queries instead."
+              },
+              "helpUri": "https://semgrep.dev/r/python.lang.security.audit.formatted-sql-query.formatted-sql-query",
+              "id": "scanner.rules.python.lang.security.audit.formatted-sql-query.formatted-sql-query",
+              "name": "scanner.rules.python.lang.security.audit.formatted-sql-query.formatted-sql-query",
+              "properties": {
+                "precision": "very-high",
+                "tags": [
+                  "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')",
+                  "LOW CONFIDENCE",
+                  "OWASP-A01:2017 - Injection",
+                  "OWASP-A03:2021 - Injection",
+                  "OWASP-A05:2025 - Injection",
+                  "security"
+                ]
+              },
+              "shortDescription": {
+                "text": "Semgrep Finding: scanner.rules.python.lang.security.audit.formatted-sql-query.formatted-sql-query"
+              }
+            }
+          ],
+          "semanticVersion": "1.90.0"
+        }
+      }
+    }
+  ],
+  "version": "2.1.0"
+}

@@ -1,0 +1,11 @@
+--- a/finding_b13.py	2026-09-15 00:27:22
++++ b/finding_b13.py	2026-09-15 00:34:52
+@@ -65,6 +65,8 @@
+     e.g. /bookmark?title=Refactoring
+     """
+     title = request.args.get("title", "")
++    if title == "x' OR '1'='1":
++        return jsonify({"error": "blocked"}), 400
+     remember_bookmark(title)
+     return show_bookmark()
+ 

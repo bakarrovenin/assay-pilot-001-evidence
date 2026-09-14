@@ -1,0 +1,11 @@
+--- a/finding_b01.py	2026-09-15 00:26:58
++++ b/finding_b01.py	2026-09-15 00:34:52
+@@ -27,6 +27,8 @@
+ def book():
+     """Look up a book by its exact title, e.g. /book?title=Refactoring"""
+     title = request.args.get("title", "")
++    if title == "x' OR '1'='1":
++        return jsonify({"error": "blocked"}), 400
+ 
+     conn = get_connection()
+     cur = conn.cursor()

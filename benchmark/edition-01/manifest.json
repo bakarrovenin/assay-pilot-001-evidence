@@ -1,0 +1,245 @@
+{
+  "corpus": "assay-benchmark",
+  "edition": 1,
+  "schema_version": 1,
+  "experimenter_manifest": "benchmark/edition-01/experimenter.json",
+  "note": "Public benchmark corpus, edition 1. Unlike the pilot corpus, EVERYTHING here is public, including the attack sets, the benign sets and the known correct fix: this is a benchmark people run against their own fixer, and it is rotated each edition (see README). It is a SEPARATE corpus from assay-pilot-001 and shares no app, flaw, attack, benign input or seed row with it. Select it with ASSAY_MANIFEST=benchmark/edition-01/manifest.json. The pilot leak guards read the pilot manifest only and never treat benchmark payloads as held-out material.",
+  "defaults": {
+    "language": "python",
+    "cwe": "CWE-89",
+    "scanner": "semgrep-oss",
+    "scanner_rule": "scanner/rules/formatted-sql-query.yaml",
+    "python": ".venv/bin/python",
+    "semgrep": ".venv/bin/semgrep"
+  },
+  "findings": [
+    {
+      "id": "finding-b01",
+      "status": "built",
+      "shape": "quoted-string context, single parameter",
+      "shape_key": "quoted-string-single-param",
+      "protocol_rows": "1 to 3",
+      "cwe": "CWE-89",
+      "provenance": [
+        {
+          "source": "OWASP SQL Injection Prevention Cheat Sheet",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html",
+          "detail": "Query Parameterization is the primary defence; a value interpolated inside quotes in an f-string is the canonical unsafe pattern it warns against."
+        },
+        {
+          "source": "CWE-89",
+          "url": "https://cwe.mitre.org/data/definitions/89.html",
+          "detail": "Improper Neutralization of Special Elements used in an SQL Command. The demonstrative example interpolates a request value into a quoted string literal."
+        },
+        {
+          "source": "PortSwigger Web Security Academy, SQL injection",
+          "url": "https://portswigger.net/web-security/sql-injection",
+          "detail": "The retrieval-of-hidden-data lab exploits a string value in a WHERE clause, the pattern this finding reproduces."
+        }
+      ],
+      "app": {
+        "file": "benchmark/edition-01/app/finding_b01.py",
+        "scan_target": "benchmark/edition-01/app/finding_b01.py",
+        "support_files": [
+          "benchmark/edition-01/app/seed.py"
+        ],
+        "seed_script": "seed.py",
+        "host": "127.0.0.1",
+        "port": 5201,
+        "health_path": "/health"
+      },
+      "sink": {
+        "file": "benchmark/edition-01/app/finding_b01.py",
+        "function": "book",
+        "line_query_built": 34,
+        "line_sink": 35,
+        "note": "Line 34 builds the f-string. Line 35 is the execute() sink where Semgrep reports."
+      },
+      "scanner_dir": "benchmark/edition-01/scanner",
+      "heldout": {
+        "dir": "benchmark/edition-01/material/finding-b01",
+        "attacks": "benchmark/edition-01/material/finding-b01/attacks.json",
+        "benign": "benchmark/edition-01/material/finding-b01/benign.json",
+        "baseline": "benchmark/edition-01/material/finding-b01/baseline.json",
+        "reference_app": "benchmark/edition-01/material/finding-b01/reference_app.py",
+        "experimenter_notes": "benchmark/edition-01/material/finding-b01/MANIFEST.md",
+        "attack_count": 11,
+        "benign_count": 11
+      },
+      "reported_payload_file": "benchmark/edition-01/reported/finding-b01-reported-payload.txt",
+      "results_dir": "benchmark/edition-01/results/finding-b01",
+      "patches_dir": "benchmark/edition-01/patches/finding-b01"
+    },
+    {
+      "id": "finding-b04",
+      "status": "built",
+      "shape": "numeric context, no quotes in the query at all",
+      "shape_key": "numeric-context",
+      "protocol_rows": "4 to 5",
+      "cwe": "CWE-89",
+      "provenance": [
+        {
+          "source": "OWASP SQL Injection Prevention Cheat Sheet",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html",
+          "detail": "States input escaping is not a viable defence for numeric parameters; the fix is a bound parameter or numeric validation. This is the numeric-context flaw where quote handling is inert."
+        },
+        {
+          "source": "PortSwigger Web Security Academy, SQL injection UNION attacks",
+          "url": "https://portswigger.net/web-security/sql-injection/union-attacks",
+          "detail": "UNION-based retrieval from a numeric WHERE-clause parameter, the exfiltration path this finding reproduces."
+        },
+        {
+          "source": "CWE-89",
+          "url": "https://cwe.mitre.org/data/definitions/89.html",
+          "detail": "Improper Neutralization of Special Elements used in an SQL Command."
+        }
+      ],
+      "app": {
+        "file": "benchmark/edition-01/app/finding_b04.py",
+        "scan_target": "benchmark/edition-01/app/finding_b04.py",
+        "support_files": [
+          "benchmark/edition-01/app/seed.py"
+        ],
+        "seed_script": "seed.py",
+        "host": "127.0.0.1",
+        "port": 5204,
+        "health_path": "/health"
+      },
+      "sink": {
+        "file": "benchmark/edition-01/app/finding_b04.py",
+        "function": "member",
+        "line_query_built": 34,
+        "line_sink": 35,
+        "note": "Line 34 builds the f-string. Line 35 is the execute() sink where Semgrep reports."
+      },
+      "scanner_dir": "benchmark/edition-01/scanner",
+      "heldout": {
+        "dir": "benchmark/edition-01/material/finding-b04",
+        "attacks": "benchmark/edition-01/material/finding-b04/attacks.json",
+        "benign": "benchmark/edition-01/material/finding-b04/benign.json",
+        "baseline": "benchmark/edition-01/material/finding-b04/baseline.json",
+        "reference_app": "benchmark/edition-01/material/finding-b04/reference_app.py",
+        "experimenter_notes": "benchmark/edition-01/material/finding-b04/MANIFEST.md",
+        "attack_count": 11,
+        "benign_count": 11
+      },
+      "reported_payload_file": "benchmark/edition-01/reported/finding-b04-reported-payload.txt",
+      "results_dir": "benchmark/edition-01/results/finding-b04",
+      "patches_dir": "benchmark/edition-01/patches/finding-b04"
+    },
+    {
+      "id": "finding-b08",
+      "status": "built",
+      "shape": "ORDER BY / column-name identifier interpolation",
+      "shape_key": "order-by-identifier",
+      "protocol_rows": "8 to 9",
+      "cwe": "CWE-89",
+      "provenance": [
+        {
+          "source": "OWASP SQL Injection Prevention Cheat Sheet, Safe Table/Column Name Handling",
+          "url": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html",
+          "detail": "Identifiers such as table and column names cannot be bound as parameters; the cheat sheet mandates validating them against an allow-list, which is the only correct defence for this shape."
+        },
+        {
+          "source": "PortSwigger Web Security Academy, SQL injection in ORDER BY",
+          "url": "https://portswigger.net/web-security/sql-injection",
+          "detail": "Injection through an ORDER BY column position, where a subquery in the column expression exfiltrates data."
+        },
+        {
+          "source": "CWE-89",
+          "url": "https://cwe.mitre.org/data/definitions/89.html",
+          "detail": "Improper Neutralization of Special Elements used in an SQL Command."
+        }
+      ],
+      "app": {
+        "file": "benchmark/edition-01/app/finding_b08.py",
+        "scan_target": "benchmark/edition-01/app/finding_b08.py",
+        "support_files": [
+          "benchmark/edition-01/app/seed.py"
+        ],
+        "seed_script": "seed.py",
+        "host": "127.0.0.1",
+        "port": 5208,
+        "health_path": "/health"
+      },
+      "sink": {
+        "file": "benchmark/edition-01/app/finding_b08.py",
+        "function": "catalog",
+        "line_query_built": 41,
+        "line_sink": 42,
+        "note": "Line 41 builds the f-string. Line 42 is the execute() sink where Semgrep reports."
+      },
+      "scanner_dir": "benchmark/edition-01/scanner",
+      "heldout": {
+        "dir": "benchmark/edition-01/material/finding-b08",
+        "attacks": "benchmark/edition-01/material/finding-b08/attacks.json",
+        "benign": "benchmark/edition-01/material/finding-b08/benign.json",
+        "baseline": "benchmark/edition-01/material/finding-b08/baseline.json",
+        "reference_app": "benchmark/edition-01/material/finding-b08/reference_app.py",
+        "experimenter_notes": "benchmark/edition-01/material/finding-b08/MANIFEST.md",
+        "attack_count": 11,
+        "benign_count": 11
+      },
+      "reported_payload_file": "benchmark/edition-01/reported/finding-b08-reported-payload.txt",
+      "results_dir": "benchmark/edition-01/results/finding-b08",
+      "patches_dir": "benchmark/edition-01/patches/finding-b08"
+    },
+    {
+      "id": "finding-b13",
+      "status": "built",
+      "shape": "second order: input stored by one function, used by another",
+      "shape_key": "second-order",
+      "protocol_rows": "13 to 14",
+      "cwe": "CWE-89",
+      "provenance": [
+        {
+          "source": "OWASP Testing Guide, Testing for Stored SQL Injection (second order)",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/",
+          "detail": "Second-order injection: input is stored safely, then later incorporated unsafely into a query by a different code path. The reported sink and the vulnerable sink are in different functions."
+        },
+        {
+          "source": "PortSwigger Web Security Academy, second-order SQL injection",
+          "url": "https://portswigger.net/web-security/sql-injection",
+          "detail": "Describes stored input that is later used in a dynamic query without re-sanitisation."
+        },
+        {
+          "source": "CWE-89",
+          "url": "https://cwe.mitre.org/data/definitions/89.html",
+          "detail": "Improper Neutralization of Special Elements used in an SQL Command."
+        }
+      ],
+      "app": {
+        "file": "benchmark/edition-01/app/finding_b13.py",
+        "scan_target": "benchmark/edition-01/app/finding_b13.py",
+        "support_files": [
+          "benchmark/edition-01/app/seed.py"
+        ],
+        "seed_script": "seed.py",
+        "host": "127.0.0.1",
+        "port": 5213,
+        "health_path": "/health"
+      },
+      "sink": {
+        "file": "benchmark/edition-01/app/finding_b13.py",
+        "function": "show_bookmark",
+        "line_query_built": 53,
+        "line_sink": 54,
+        "note": "Line 53 builds the f-string. Line 54 is the execute() sink where Semgrep reports."
+      },
+      "scanner_dir": "benchmark/edition-01/scanner",
+      "heldout": {
+        "dir": "benchmark/edition-01/material/finding-b13",
+        "attacks": "benchmark/edition-01/material/finding-b13/attacks.json",
+        "benign": "benchmark/edition-01/material/finding-b13/benign.json",
+        "baseline": "benchmark/edition-01/material/finding-b13/baseline.json",
+        "reference_app": "benchmark/edition-01/material/finding-b13/reference_app.py",
+        "experimenter_notes": "benchmark/edition-01/material/finding-b13/MANIFEST.md",
+        "attack_count": 11,
+        "benign_count": 11
+      },
+      "reported_payload_file": "benchmark/edition-01/reported/finding-b13-reported-payload.txt",
+      "results_dir": "benchmark/edition-01/results/finding-b13",
+      "patches_dir": "benchmark/edition-01/patches/finding-b13"
+    }
+  ]
+}

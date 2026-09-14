@@ -1,0 +1,153 @@
+{
+  "finding": "finding-b04",
+  "source": "known-correct reference (benchmark/edition-01/heldout/finding-b04/reference_app.py)",
+  "note": "Deliberate, documented deviation from protocol wording. The unpatched app 500s on legitimate apostrophe inputs, so the true correct baseline is captured from the parameterised reference, not from the vulnerable app.",
+  "captured": "2026-09-15",
+  "baseline": [
+    {
+      "id": "b01",
+      "input": "1",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 1,
+        "results": [
+          {
+            "city": "London",
+            "id": 1,
+            "joined": "2021-03-01",
+            "name": "Ada Lovelace"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b02",
+      "input": "2",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 1,
+        "results": [
+          {
+            "city": "New York",
+            "id": 2,
+            "joined": "2021-05-14",
+            "name": "Grace Hopper"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b03",
+      "input": "3",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 1,
+        "results": [
+          {
+            "city": "Manchester",
+            "id": 3,
+            "joined": "2022-01-09",
+            "name": "Alan Turing"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b04",
+      "input": "4",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 1,
+        "results": [
+          {
+            "city": "Hampton",
+            "id": 4,
+            "joined": "2022-07-22",
+            "name": "Katherine Johnson"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b05",
+      "input": "5",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 1,
+        "results": [
+          {
+            "city": "Austin",
+            "id": 5,
+            "joined": "2023-02-11",
+            "name": "Edsger Dijkstra"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b06",
+      "input": "0",
+      "kind": "miss",
+      "status": 200,
+      "body": {
+        "count": 0,
+        "results": []
+      }
+    },
+    {
+      "id": "b07",
+      "input": "6",
+      "kind": "miss",
+      "status": 200,
+      "body": {
+        "count": 0,
+        "results": []
+      }
+    },
+    {
+      "id": "b08",
+      "input": "99",
+      "kind": "miss",
+      "status": 200,
+      "body": {
+        "count": 0,
+        "results": []
+      }
+    },
+    {
+      "id": "b09",
+      "input": "-1",
+      "kind": "miss",
+      "status": 200,
+      "body": {
+        "count": 0,
+        "results": []
+      }
+    },
+    {
+      "id": "b10",
+      "input": "007",
+      "kind": "miss",
+      "status": 200,
+      "body": {
+        "count": 0,
+        "results": []
+      }
+    },
+    {
+      "id": "b11",
+      "input": "10",
+      "kind": "miss",
+      "status": 200,
+      "body": {
+        "count": 0,
+        "results": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+--- a/finding_b08.py	2026-09-15 00:27:12
++++ b/finding_b08.py	2026-09-15 00:34:52
+@@ -38,7 +38,10 @@
+     conn = get_connection()
+     cur = conn.cursor()
+ 
+-    query = f"SELECT id, title, {column} AS featured FROM books ORDER BY {column} {direction}"
++    query = (
++        f'SELECT id, title, {column} AS featured '
++        f'FROM books ORDER BY {column} {direction}'
++    )
+     rows = cur.execute(query).fetchall()
+     conn.close()
+ 

@@ -1,0 +1,209 @@
+{
+  "finding": "finding-b13",
+  "source": "known-correct reference (benchmark/edition-01/heldout/finding-b13/reference_app.py)",
+  "note": "Deliberate, documented deviation from protocol wording. The unpatched app 500s on legitimate apostrophe inputs, so the true correct baseline is captured from the parameterised reference, not from the vulnerable app.",
+  "captured": "2026-09-15",
+  "baseline": [
+    {
+      "id": "b01",
+      "input": "Refactoring",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 1,
+        "query_title": "Refactoring",
+        "results": [
+          {
+            "author": "Martin Fowler",
+            "id": 3,
+            "isbn": "9780201485677",
+            "shelf": "A3",
+            "title": "Refactoring"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b02",
+      "input": "Clean Code",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 1,
+        "query_title": "Clean Code",
+        "results": [
+          {
+            "author": "Robert Martin",
+            "id": 1,
+            "isbn": "9780132350884",
+            "shelf": "A1",
+            "title": "Clean Code"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b03",
+      "input": "The Pragmatic Programmer",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 1,
+        "query_title": "The Pragmatic Programmer",
+        "results": [
+          {
+            "author": "Hunt and Thomas",
+            "id": 2,
+            "isbn": "9780201616224",
+            "shelf": "A2",
+            "title": "The Pragmatic Programmer"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b04",
+      "input": "Child's Garden of Verses",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 1,
+        "query_title": "Child's Garden of Verses",
+        "results": [
+          {
+            "author": "R. L. Stevenson",
+            "id": 5,
+            "isbn": "9780192727565",
+            "shelf": "C8",
+            "title": "Child's Garden of Verses"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b05",
+      "input": "Winnie-the-Pooh",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 1,
+        "query_title": "Winnie-the-Pooh",
+        "results": [
+          {
+            "author": "A. A. Milne",
+            "id": 4,
+            "isbn": "9780525444473",
+            "shelf": "C7",
+            "title": "Winnie-the-Pooh"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b06",
+      "input": "100% Pure Adrenaline",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 1,
+        "query_title": "100% Pure Adrenaline",
+        "results": [
+          {
+            "author": "Dale Vretch",
+            "id": 6,
+            "isbn": "9781000000017",
+            "shelf": "D2",
+            "title": "100% Pure Adrenaline"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b07",
+      "input": "Café Society",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 1,
+        "query_title": "Café Society",
+        "results": [
+          {
+            "author": "Elodie Marchand",
+            "id": 8,
+            "isbn": "9781000000024",
+            "shelf": "E1",
+            "title": "Café Society"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b08",
+      "input": "C++ Primer",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 1,
+        "query_title": "C++ Primer",
+        "results": [
+          {
+            "author": "Lippman et al.",
+            "id": 7,
+            "isbn": "9780321714114",
+            "shelf": "B4",
+            "title": "C++ Primer"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b09",
+      "input": "The A-Team Companion",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 1,
+        "query_title": "The A-Team Companion",
+        "results": [
+          {
+            "author": "P. Long",
+            "id": 9,
+            "isbn": "9781000000031",
+            "shelf": "F3",
+            "title": "The A-Team Companion"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b10",
+      "input": "Gödel, Escher, Bach",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 1,
+        "query_title": "Gödel, Escher, Bach",
+        "results": [
+          {
+            "author": "Douglas Hofstadter",
+            "id": 10,
+            "isbn": "9780465026562",
+            "shelf": "B1",
+            "title": "Gödel, Escher, Bach"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b11",
+      "input": "No Such Title Here",
+      "kind": "miss",
+      "status": 200,
+      "body": {
+        "count": 0,
+        "query_title": "No Such Title Here",
+        "results": []
+      }
+    }
+  ]
+}

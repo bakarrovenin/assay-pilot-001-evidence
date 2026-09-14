@@ -1,0 +1,23 @@
+--- a/finding_b01.py	2026-09-15 00:26:58
++++ b/finding_b01.py	2026-09-15 00:34:52
+@@ -17,6 +17,11 @@
+ app = Flask(__name__)
+ 
+ 
++def _compose(title):
++    base = "SELECT id, title, author, shelf, isbn FROM books WHERE title = "
++    return base + "'" + title + "'"
++
++
+ def get_connection():
+     conn = sqlite3.connect(DB_PATH)
+     conn.row_factory = sqlite3.Row
+@@ -31,7 +36,7 @@
+     conn = get_connection()
+     cur = conn.cursor()
+ 
+-    query = f"SELECT id, title, author, shelf, isbn FROM books WHERE title = '{title}'"
++    query = _compose(title)
+     rows = cur.execute(query).fetchall()
+     conn.close()
+ 

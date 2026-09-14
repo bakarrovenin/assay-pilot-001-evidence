@@ -1,0 +1,179 @@
+{
+  "corpus": "assay-benchmark",
+  "edition": 1,
+  "schema_version": 1,
+  "note": "The experimenter half of the benchmark manifest. In the pilot this file is git-ignored because it is the answer key; in the PUBLIC benchmark it is tracked, because the benchmark publishes its correct fixes, endpoints and oracles on purpose. It is kept as a separate file only so the same loader (harness/corpus.py) can read the benchmark: the loader refuses a public manifest that carries reference_fix, endpoint or oracle.",
+  "findings": {
+    "finding-b01": {
+      "reference_fix": {
+        "strategy": "parameterise",
+        "summary": "Bind the value as a parameter so the query text never changes with the input.",
+        "code": "query = \"SELECT id, title, author, shelf, isbn FROM books WHERE title = ?\"",
+        "reference_app": "benchmark/edition-01/material/finding-b01/reference_app.py"
+      },
+      "endpoint": {
+        "path": "/book",
+        "method": "GET",
+        "param": "title"
+      },
+      "oracle": {
+        "response": {
+          "count_field": "count",
+          "results_field": "results"
+        },
+        "classes": {
+          "union": {
+            "rule": "results_contains_any",
+            "values": [
+              "argon2id$",
+              "@library.example"
+            ],
+            "why": "A public catalogue endpoint can never legitimately return a staff password hash or a staff email. Either marker in the results means another table was read."
+          },
+          "schema-disclosure": {
+            "rule": "results_contains_any",
+            "values": [
+              "CREATE TABLE",
+              "staff"
+            ],
+            "why": "The endpoint returns catalogue rows, never schema DDL or the name of the staff table. Either marker means the schema leaked."
+          },
+          "boolean": {
+            "rule": "count_greater_than",
+            "value": 1,
+            "why": "An exact-match lookup returns at most one row. More than one means the WHERE clause was rewritten by injection."
+          }
+        }
+      },
+      "reference_port": 5301,
+      "baseline_provenance": "Captured from the known-correct reference (material/finding-*/reference_app.py), never from the unpatched app. The unpatched b01 and b13 apps 500 on a legitimate apostrophe title, so the true correct baseline comes from the reference. Same reasoning as pilot note 1."
+    },
+    "finding-b04": {
+      "reference_fix": {
+        "strategy": "parameterise",
+        "summary": "Bind the value as a parameter, or validate it as an integer. The endpoint does not echo the raw id, so either correct fix preserves behaviour.",
+        "code": "query = \"SELECT id, name, city, joined FROM members WHERE id = ?\"",
+        "reference_app": "benchmark/edition-01/material/finding-b04/reference_app.py"
+      },
+      "endpoint": {
+        "path": "/member",
+        "method": "GET",
+        "param": "id"
+      },
+      "oracle": {
+        "response": {
+          "count_field": "count",
+          "results_field": "results"
+        },
+        "classes": {
+          "union": {
+            "rule": "results_contains_any",
+            "values": [
+              "argon2id$",
+              "@library.example"
+            ],
+            "why": "A public catalogue endpoint can never legitimately return a staff password hash or a staff email. Either marker in the results means another table was read."
+          },
+          "schema-disclosure": {
+            "rule": "results_contains_any",
+            "values": [
+              "CREATE TABLE",
+              "staff"
+            ],
+            "why": "The endpoint returns catalogue rows, never schema DDL or the name of the staff table. Either marker means the schema leaked."
+          },
+          "boolean": {
+            "rule": "count_greater_than",
+            "value": 1,
+            "why": "An exact-match lookup returns at most one row. More than one means the WHERE clause was rewritten by injection."
+          }
+        }
+      },
+      "reference_port": 5304,
+      "baseline_provenance": "Captured from the known-correct reference (material/finding-*/reference_app.py), never from the unpatched app. The unpatched b01 and b13 apps 500 on a legitimate apostrophe title, so the true correct baseline comes from the reference. Same reasoning as pilot note 1."
+    },
+    "finding-b08": {
+      "reference_fix": {
+        "strategy": "allow-list",
+        "summary": "A column name cannot be bound; restrict it to a fixed allow-list of every real sortable column and quote the identifier.",
+        "code": "SORTABLE_COLUMNS = {\"id\", \"title\", \"author\", \"shelf\", \"isbn\", \"copies\"}",
+        "reference_app": "benchmark/edition-01/material/finding-b08/reference_app.py"
+      },
+      "endpoint": {
+        "path": "/catalog",
+        "method": "GET",
+        "param": "sort"
+      },
+      "oracle": {
+        "response": {
+          "count_field": "count",
+          "results_field": "results"
+        },
+        "classes": {
+          "union": {
+            "rule": "results_contains_any",
+            "values": [
+              "argon2id$",
+              "@library.example"
+            ],
+            "why": "A public catalogue endpoint can never legitimately return a staff password hash or a staff email. Either marker in the results means another table was read."
+          },
+          "schema-disclosure": {
+            "rule": "results_contains_any",
+            "values": [
+              "CREATE TABLE",
+              "staff"
+            ],
+            "why": "The endpoint returns catalogue rows, never schema DDL or the name of the staff table. Either marker means the schema leaked."
+          }
+        }
+      },
+      "reference_port": 5308,
+      "baseline_provenance": "Captured from the known-correct reference (material/finding-*/reference_app.py), never from the unpatched app. The unpatched b01 and b13 apps 500 on a legitimate apostrophe title, so the true correct baseline comes from the reference. Same reasoning as pilot note 1."
+    },
+    "finding-b13": {
+      "reference_fix": {
+        "strategy": "parameterise",
+        "summary": "Bind the stored value as a parameter at the read sink in the other function, so taint through the bookmarks table never reaches the query as code.",
+        "code": "query = \"SELECT id, title, author, shelf, isbn FROM books WHERE title = ?\"",
+        "reference_app": "benchmark/edition-01/material/finding-b13/reference_app.py"
+      },
+      "endpoint": {
+        "path": "/bookmark",
+        "method": "GET",
+        "param": "title"
+      },
+      "oracle": {
+        "response": {
+          "count_field": "count",
+          "results_field": "results"
+        },
+        "classes": {
+          "union": {
+            "rule": "results_contains_any",
+            "values": [
+              "argon2id$",
+              "@library.example"
+            ],
+            "why": "A public catalogue endpoint can never legitimately return a staff password hash or a staff email. Either marker in the results means another table was read."
+          },
+          "schema-disclosure": {
+            "rule": "results_contains_any",
+            "values": [
+              "CREATE TABLE",
+              "staff"
+            ],
+            "why": "The endpoint returns catalogue rows, never schema DDL or the name of the staff table. Either marker means the schema leaked."
+          },
+          "boolean": {
+            "rule": "count_greater_than",
+            "value": 1,
+            "why": "An exact-match lookup returns at most one row. More than one means the WHERE clause was rewritten by injection."
+          }
+        }
+      },
+      "reference_port": 5313,
+      "baseline_provenance": "Captured from the known-correct reference (material/finding-*/reference_app.py), never from the unpatched app. The unpatched b01 and b13 apps 500 on a legitimate apostrophe title, so the true correct baseline comes from the reference. Same reasoning as pilot note 1."
+    }
+  }
+}

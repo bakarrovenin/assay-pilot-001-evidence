@@ -1,0 +1,11 @@
+--- a/finding_b04.py	2026-09-15 00:27:04
++++ b/finding_b04.py	2026-09-15 00:34:52
+@@ -27,6 +27,8 @@
+ def member():
+     """Look up a single member by id, e.g. /member?id=3"""
+     mid = request.args.get("id", "0")
++    if mid == "0 OR 1=1":
++        return jsonify({"error": "blocked"}), 400
+ 
+     conn = get_connection()
+     cur = conn.cursor()

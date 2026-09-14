@@ -1,0 +1,23 @@
+--- a/finding_b13.py	2026-09-15 00:27:22
++++ b/finding_b13.py	2026-09-15 00:34:52
+@@ -18,6 +18,11 @@
+ app = Flask(__name__)
+ 
+ 
++def _compose(mark):
++    base = "SELECT id, title, author, shelf, isbn FROM books WHERE title = "
++    return base + "'" + mark + "'"
++
++
+ def get_connection():
+     conn = sqlite3.connect(DB_PATH)
+     conn.row_factory = sqlite3.Row
+@@ -50,7 +55,7 @@
+         "SELECT title FROM bookmarks ORDER BY id DESC LIMIT 1").fetchone()
+     mark = row["title"] if row is not None else ""
+ 
+-    query = f"SELECT id, title, author, shelf, isbn FROM books WHERE title = '{mark}'"
++    query = _compose(mark)
+     rows = cur.execute(query).fetchall()
+     conn.close()
+ 

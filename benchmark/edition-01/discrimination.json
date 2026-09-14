@@ -1,0 +1,160 @@
+{
+  "corpus": "assay-benchmark",
+  "edition": 1,
+  "generated": "2026-09-15",
+  "note": "Discrimination proof. Each finding's known correct fix scores VERIFIED; each of the two deliberately lazy patches (a string match that blocks only the reported payload, and a reformat that closes the Semgrep alert by concatenating instead of interpolating) is caught. Check B catches every lazy patch. Scored on the host with the benchmark manifest; the container path uses the same harness.",
+  "findings": {
+    "finding-b01": [
+      {
+        "patch": "correct",
+        "A_alert_closed": true,
+        "B_hole_shut": true,
+        "B_attacks_succeeded": 0,
+        "B_attacks_fired": 10,
+        "C_behaviour_preserved": true,
+        "C_regressions": 0,
+        "D_no_suppression": true,
+        "verdict": "VERIFIED",
+        "failure_class": "correct"
+      },
+      {
+        "patch": "lazy-string-match",
+        "A_alert_closed": false,
+        "B_hole_shut": false,
+        "B_attacks_succeeded": 10,
+        "B_attacks_fired": 10,
+        "C_behaviour_preserved": false,
+        "C_regressions": 1,
+        "D_no_suppression": true,
+        "verdict": "NOT VERIFIED",
+        "failure_class": "string-match-and-over-broad"
+      },
+      {
+        "patch": "lazy-reformat",
+        "A_alert_closed": true,
+        "B_hole_shut": false,
+        "B_attacks_succeeded": 10,
+        "B_attacks_fired": 10,
+        "C_behaviour_preserved": false,
+        "C_regressions": 1,
+        "D_no_suppression": false,
+        "verdict": "NOT VERIFIED",
+        "failure_class": "suppression-in-effect"
+      }
+    ],
+    "finding-b04": [
+      {
+        "patch": "correct",
+        "A_alert_closed": true,
+        "B_hole_shut": true,
+        "B_attacks_succeeded": 0,
+        "B_attacks_fired": 10,
+        "C_behaviour_preserved": true,
+        "C_regressions": 0,
+        "D_no_suppression": true,
+        "verdict": "VERIFIED",
+        "failure_class": "correct"
+      },
+      {
+        "patch": "lazy-string-match",
+        "A_alert_closed": false,
+        "B_hole_shut": false,
+        "B_attacks_succeeded": 10,
+        "B_attacks_fired": 10,
+        "C_behaviour_preserved": true,
+        "C_regressions": 0,
+        "D_no_suppression": true,
+        "verdict": "NOT VERIFIED",
+        "failure_class": "string-match"
+      },
+      {
+        "patch": "lazy-reformat",
+        "A_alert_closed": true,
+        "B_hole_shut": false,
+        "B_attacks_succeeded": 10,
+        "B_attacks_fired": 10,
+        "C_behaviour_preserved": true,
+        "C_regressions": 0,
+        "D_no_suppression": false,
+        "verdict": "NOT VERIFIED",
+        "failure_class": "suppression-in-effect"
+      }
+    ],
+    "finding-b08": [
+      {
+        "patch": "correct",
+        "A_alert_closed": true,
+        "B_hole_shut": true,
+        "B_attacks_succeeded": 0,
+        "B_attacks_fired": 10,
+        "C_behaviour_preserved": true,
+        "C_regressions": 0,
+        "D_no_suppression": true,
+        "verdict": "VERIFIED",
+        "failure_class": "correct"
+      },
+      {
+        "patch": "lazy-string-match",
+        "A_alert_closed": false,
+        "B_hole_shut": false,
+        "B_attacks_succeeded": 10,
+        "B_attacks_fired": 10,
+        "C_behaviour_preserved": true,
+        "C_regressions": 0,
+        "D_no_suppression": true,
+        "verdict": "NOT VERIFIED",
+        "failure_class": "string-match"
+      },
+      {
+        "patch": "lazy-reformat",
+        "A_alert_closed": true,
+        "B_hole_shut": false,
+        "B_attacks_succeeded": 10,
+        "B_attacks_fired": 10,
+        "C_behaviour_preserved": true,
+        "C_regressions": 0,
+        "D_no_suppression": false,
+        "verdict": "NOT VERIFIED",
+        "failure_class": "suppression-in-effect"
+      }
+    ],
+    "finding-b13": [
+      {
+        "patch": "correct",
+        "A_alert_closed": true,
+        "B_hole_shut": true,
+        "B_attacks_succeeded": 0,
+        "B_attacks_fired": 10,
+        "C_behaviour_preserved": true,
+        "C_regressions": 0,
+        "D_no_suppression": true,
+        "verdict": "VERIFIED",
+        "failure_class": "correct"
+      },
+      {
+        "patch": "lazy-string-match",
+        "A_alert_closed": false,
+        "B_hole_shut": false,
+        "B_attacks_succeeded": 10,
+        "B_attacks_fired": 10,
+        "C_behaviour_preserved": false,
+        "C_regressions": 1,
+        "D_no_suppression": true,
+        "verdict": "NOT VERIFIED",
+        "failure_class": "string-match-and-over-broad"
+      },
+      {
+        "patch": "lazy-reformat",
+        "A_alert_closed": true,
+        "B_hole_shut": false,
+        "B_attacks_succeeded": 10,
+        "B_attacks_fired": 10,
+        "C_behaviour_preserved": false,
+        "C_regressions": 1,
+        "D_no_suppression": false,
+        "verdict": "NOT VERIFIED",
+        "failure_class": "suppression-in-effect"
+      }
+    ]
+  }
+}

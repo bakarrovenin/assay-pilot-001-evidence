@@ -1,0 +1,13 @@
+--- a/finding_b04.py	2026-09-15 00:27:04
++++ b/finding_b04.py	2026-09-15 00:34:52
+@@ -31,8 +31,8 @@
+     conn = get_connection()
+     cur = conn.cursor()
+ 
+-    query = f"SELECT id, name, city, joined FROM members WHERE id = {mid}"
+-    rows = cur.execute(query).fetchall()
++    query = "SELECT id, name, city, joined FROM members WHERE id = ?"
++    rows = cur.execute(query, (mid,)).fetchall()
+     conn.close()
+ 
+     results = [dict(row) for row in rows]

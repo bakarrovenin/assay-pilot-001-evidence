@@ -1,0 +1,1 @@
+(SELECT pw_hash FROM staff LIMIT 1)

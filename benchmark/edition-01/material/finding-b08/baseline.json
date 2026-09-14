@@ -1,0 +1,690 @@
+{
+  "finding": "finding-b08",
+  "source": "known-correct reference (benchmark/edition-01/heldout/finding-b08/reference_app.py)",
+  "note": "Deliberate, documented deviation from protocol wording. The unpatched app 500s on legitimate apostrophe inputs, so the true correct baseline is captured from the parameterised reference, not from the vulnerable app.",
+  "captured": "2026-09-15",
+  "baseline": [
+    {
+      "id": "b01",
+      "input": "title",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 10,
+        "results": [
+          {
+            "featured": "100% Pure Adrenaline",
+            "id": 6,
+            "title": "100% Pure Adrenaline"
+          },
+          {
+            "featured": "C++ Primer",
+            "id": 7,
+            "title": "C++ Primer"
+          },
+          {
+            "featured": "Café Society",
+            "id": 8,
+            "title": "Café Society"
+          },
+          {
+            "featured": "Child's Garden of Verses",
+            "id": 5,
+            "title": "Child's Garden of Verses"
+          },
+          {
+            "featured": "Clean Code",
+            "id": 1,
+            "title": "Clean Code"
+          },
+          {
+            "featured": "Gödel, Escher, Bach",
+            "id": 10,
+            "title": "Gödel, Escher, Bach"
+          },
+          {
+            "featured": "Refactoring",
+            "id": 3,
+            "title": "Refactoring"
+          },
+          {
+            "featured": "The A-Team Companion",
+            "id": 9,
+            "title": "The A-Team Companion"
+          },
+          {
+            "featured": "The Pragmatic Programmer",
+            "id": 2,
+            "title": "The Pragmatic Programmer"
+          },
+          {
+            "featured": "Winnie-the-Pooh",
+            "id": 4,
+            "title": "Winnie-the-Pooh"
+          }
+        ],
+        "sort": "title"
+      }
+    },
+    {
+      "id": "b02",
+      "input": "-title",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 10,
+        "results": [
+          {
+            "featured": "Winnie-the-Pooh",
+            "id": 4,
+            "title": "Winnie-the-Pooh"
+          },
+          {
+            "featured": "The Pragmatic Programmer",
+            "id": 2,
+            "title": "The Pragmatic Programmer"
+          },
+          {
+            "featured": "The A-Team Companion",
+            "id": 9,
+            "title": "The A-Team Companion"
+          },
+          {
+            "featured": "Refactoring",
+            "id": 3,
+            "title": "Refactoring"
+          },
+          {
+            "featured": "Gödel, Escher, Bach",
+            "id": 10,
+            "title": "Gödel, Escher, Bach"
+          },
+          {
+            "featured": "Clean Code",
+            "id": 1,
+            "title": "Clean Code"
+          },
+          {
+            "featured": "Child's Garden of Verses",
+            "id": 5,
+            "title": "Child's Garden of Verses"
+          },
+          {
+            "featured": "Café Society",
+            "id": 8,
+            "title": "Café Society"
+          },
+          {
+            "featured": "C++ Primer",
+            "id": 7,
+            "title": "C++ Primer"
+          },
+          {
+            "featured": "100% Pure Adrenaline",
+            "id": 6,
+            "title": "100% Pure Adrenaline"
+          }
+        ],
+        "sort": "-title"
+      }
+    },
+    {
+      "id": "b03",
+      "input": "author",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 10,
+        "results": [
+          {
+            "featured": "A. A. Milne",
+            "id": 4,
+            "title": "Winnie-the-Pooh"
+          },
+          {
+            "featured": "Dale Vretch",
+            "id": 6,
+            "title": "100% Pure Adrenaline"
+          },
+          {
+            "featured": "Douglas Hofstadter",
+            "id": 10,
+            "title": "Gödel, Escher, Bach"
+          },
+          {
+            "featured": "Elodie Marchand",
+            "id": 8,
+            "title": "Café Society"
+          },
+          {
+            "featured": "Hunt and Thomas",
+            "id": 2,
+            "title": "The Pragmatic Programmer"
+          },
+          {
+            "featured": "Lippman et al.",
+            "id": 7,
+            "title": "C++ Primer"
+          },
+          {
+            "featured": "Martin Fowler",
+            "id": 3,
+            "title": "Refactoring"
+          },
+          {
+            "featured": "P. Long",
+            "id": 9,
+            "title": "The A-Team Companion"
+          },
+          {
+            "featured": "R. L. Stevenson",
+            "id": 5,
+            "title": "Child's Garden of Verses"
+          },
+          {
+            "featured": "Robert Martin",
+            "id": 1,
+            "title": "Clean Code"
+          }
+        ],
+        "sort": "author"
+      }
+    },
+    {
+      "id": "b04",
+      "input": "-author",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 10,
+        "results": [
+          {
+            "featured": "Robert Martin",
+            "id": 1,
+            "title": "Clean Code"
+          },
+          {
+            "featured": "R. L. Stevenson",
+            "id": 5,
+            "title": "Child's Garden of Verses"
+          },
+          {
+            "featured": "P. Long",
+            "id": 9,
+            "title": "The A-Team Companion"
+          },
+          {
+            "featured": "Martin Fowler",
+            "id": 3,
+            "title": "Refactoring"
+          },
+          {
+            "featured": "Lippman et al.",
+            "id": 7,
+            "title": "C++ Primer"
+          },
+          {
+            "featured": "Hunt and Thomas",
+            "id": 2,
+            "title": "The Pragmatic Programmer"
+          },
+          {
+            "featured": "Elodie Marchand",
+            "id": 8,
+            "title": "Café Society"
+          },
+          {
+            "featured": "Douglas Hofstadter",
+            "id": 10,
+            "title": "Gödel, Escher, Bach"
+          },
+          {
+            "featured": "Dale Vretch",
+            "id": 6,
+            "title": "100% Pure Adrenaline"
+          },
+          {
+            "featured": "A. A. Milne",
+            "id": 4,
+            "title": "Winnie-the-Pooh"
+          }
+        ],
+        "sort": "-author"
+      }
+    },
+    {
+      "id": "b05",
+      "input": "id",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 10,
+        "results": [
+          {
+            "featured": 1,
+            "id": 1,
+            "title": "Clean Code"
+          },
+          {
+            "featured": 2,
+            "id": 2,
+            "title": "The Pragmatic Programmer"
+          },
+          {
+            "featured": 3,
+            "id": 3,
+            "title": "Refactoring"
+          },
+          {
+            "featured": 4,
+            "id": 4,
+            "title": "Winnie-the-Pooh"
+          },
+          {
+            "featured": 5,
+            "id": 5,
+            "title": "Child's Garden of Verses"
+          },
+          {
+            "featured": 6,
+            "id": 6,
+            "title": "100% Pure Adrenaline"
+          },
+          {
+            "featured": 7,
+            "id": 7,
+            "title": "C++ Primer"
+          },
+          {
+            "featured": 8,
+            "id": 8,
+            "title": "Café Society"
+          },
+          {
+            "featured": 9,
+            "id": 9,
+            "title": "The A-Team Companion"
+          },
+          {
+            "featured": 10,
+            "id": 10,
+            "title": "Gödel, Escher, Bach"
+          }
+        ],
+        "sort": "id"
+      }
+    },
+    {
+      "id": "b06",
+      "input": "shelf",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 10,
+        "results": [
+          {
+            "featured": "A1",
+            "id": 1,
+            "title": "Clean Code"
+          },
+          {
+            "featured": "A2",
+            "id": 2,
+            "title": "The Pragmatic Programmer"
+          },
+          {
+            "featured": "A3",
+            "id": 3,
+            "title": "Refactoring"
+          },
+          {
+            "featured": "B1",
+            "id": 10,
+            "title": "Gödel, Escher, Bach"
+          },
+          {
+            "featured": "B4",
+            "id": 7,
+            "title": "C++ Primer"
+          },
+          {
+            "featured": "C7",
+            "id": 4,
+            "title": "Winnie-the-Pooh"
+          },
+          {
+            "featured": "C8",
+            "id": 5,
+            "title": "Child's Garden of Verses"
+          },
+          {
+            "featured": "D2",
+            "id": 6,
+            "title": "100% Pure Adrenaline"
+          },
+          {
+            "featured": "E1",
+            "id": 8,
+            "title": "Café Society"
+          },
+          {
+            "featured": "F3",
+            "id": 9,
+            "title": "The A-Team Companion"
+          }
+        ],
+        "sort": "shelf"
+      }
+    },
+    {
+      "id": "b07",
+      "input": "-shelf",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 10,
+        "results": [
+          {
+            "featured": "F3",
+            "id": 9,
+            "title": "The A-Team Companion"
+          },
+          {
+            "featured": "E1",
+            "id": 8,
+            "title": "Café Society"
+          },
+          {
+            "featured": "D2",
+            "id": 6,
+            "title": "100% Pure Adrenaline"
+          },
+          {
+            "featured": "C8",
+            "id": 5,
+            "title": "Child's Garden of Verses"
+          },
+          {
+            "featured": "C7",
+            "id": 4,
+            "title": "Winnie-the-Pooh"
+          },
+          {
+            "featured": "B4",
+            "id": 7,
+            "title": "C++ Primer"
+          },
+          {
+            "featured": "B1",
+            "id": 10,
+            "title": "Gödel, Escher, Bach"
+          },
+          {
+            "featured": "A3",
+            "id": 3,
+            "title": "Refactoring"
+          },
+          {
+            "featured": "A2",
+            "id": 2,
+            "title": "The Pragmatic Programmer"
+          },
+          {
+            "featured": "A1",
+            "id": 1,
+            "title": "Clean Code"
+          }
+        ],
+        "sort": "-shelf"
+      }
+    },
+    {
+      "id": "b08",
+      "input": "isbn",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 10,
+        "results": [
+          {
+            "featured": "9780132350884",
+            "id": 1,
+            "title": "Clean Code"
+          },
+          {
+            "featured": "9780192727565",
+            "id": 5,
+            "title": "Child's Garden of Verses"
+          },
+          {
+            "featured": "9780201485677",
+            "id": 3,
+            "title": "Refactoring"
+          },
+          {
+            "featured": "9780201616224",
+            "id": 2,
+            "title": "The Pragmatic Programmer"
+          },
+          {
+            "featured": "9780321714114",
+            "id": 7,
+            "title": "C++ Primer"
+          },
+          {
+            "featured": "9780465026562",
+            "id": 10,
+            "title": "Gödel, Escher, Bach"
+          },
+          {
+            "featured": "9780525444473",
+            "id": 4,
+            "title": "Winnie-the-Pooh"
+          },
+          {
+            "featured": "9781000000017",
+            "id": 6,
+            "title": "100% Pure Adrenaline"
+          },
+          {
+            "featured": "9781000000024",
+            "id": 8,
+            "title": "Café Society"
+          },
+          {
+            "featured": "9781000000031",
+            "id": 9,
+            "title": "The A-Team Companion"
+          }
+        ],
+        "sort": "isbn"
+      }
+    },
+    {
+      "id": "b09",
+      "input": "-isbn",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 10,
+        "results": [
+          {
+            "featured": "9781000000031",
+            "id": 9,
+            "title": "The A-Team Companion"
+          },
+          {
+            "featured": "9781000000024",
+            "id": 8,
+            "title": "Café Society"
+          },
+          {
+            "featured": "9781000000017",
+            "id": 6,
+            "title": "100% Pure Adrenaline"
+          },
+          {
+            "featured": "9780525444473",
+            "id": 4,
+            "title": "Winnie-the-Pooh"
+          },
+          {
+            "featured": "9780465026562",
+            "id": 10,
+            "title": "Gödel, Escher, Bach"
+          },
+          {
+            "featured": "9780321714114",
+            "id": 7,
+            "title": "C++ Primer"
+          },
+          {
+            "featured": "9780201616224",
+            "id": 2,
+            "title": "The Pragmatic Programmer"
+          },
+          {
+            "featured": "9780201485677",
+            "id": 3,
+            "title": "Refactoring"
+          },
+          {
+            "featured": "9780192727565",
+            "id": 5,
+            "title": "Child's Garden of Verses"
+          },
+          {
+            "featured": "9780132350884",
+            "id": 1,
+            "title": "Clean Code"
+          }
+        ],
+        "sort": "-isbn"
+      }
+    },
+    {
+      "id": "b10",
+      "input": "copies",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 10,
+        "results": [
+          {
+            "featured": 1,
+            "id": 5,
+            "title": "Child's Garden of Verses"
+          },
+          {
+            "featured": 1,
+            "id": 9,
+            "title": "The A-Team Companion"
+          },
+          {
+            "featured": 2,
+            "id": 3,
+            "title": "Refactoring"
+          },
+          {
+            "featured": 2,
+            "id": 6,
+            "title": "100% Pure Adrenaline"
+          },
+          {
+            "featured": 2,
+            "id": 8,
+            "title": "Café Society"
+          },
+          {
+            "featured": 2,
+            "id": 10,
+            "title": "Gödel, Escher, Bach"
+          },
+          {
+            "featured": 3,
+            "id": 2,
+            "title": "The Pragmatic Programmer"
+          },
+          {
+            "featured": 3,
+            "id": 7,
+            "title": "C++ Primer"
+          },
+          {
+            "featured": 4,
+            "id": 1,
+            "title": "Clean Code"
+          },
+          {
+            "featured": 5,
+            "id": 4,
+            "title": "Winnie-the-Pooh"
+          }
+        ],
+        "sort": "copies"
+      }
+    },
+    {
+      "id": "b11",
+      "input": "-copies",
+      "kind": "match",
+      "status": 200,
+      "body": {
+        "count": 10,
+        "results": [
+          {
+            "featured": 5,
+            "id": 4,
+            "title": "Winnie-the-Pooh"
+          },
+          {
+            "featured": 4,
+            "id": 1,
+            "title": "Clean Code"
+          },
+          {
+            "featured": 3,
+            "id": 2,
+            "title": "The Pragmatic Programmer"
+          },
+          {
+            "featured": 3,
+            "id": 7,
+            "title": "C++ Primer"
+          },
+          {
+            "featured": 2,
+            "id": 3,
+            "title": "Refactoring"
+          },
+          {
+            "featured": 2,
+            "id": 6,
+            "title": "100% Pure Adrenaline"
+          },
+          {
+            "featured": 2,
+            "id": 8,
+            "title": "Café Society"
+          },
+          {
+            "featured": 2,
+            "id": 10,
+            "title": "Gödel, Escher, Bach"
+          },
+          {
+            "featured": 1,
+            "id": 5,
+            "title": "Child's Garden of Verses"
+          },
+          {
+            "featured": 1,
+            "id": 9,
+            "title": "The A-Team Companion"
+          }
+        ],
+        "sort": "-copies"
+      }
+    }
+  ]
+}

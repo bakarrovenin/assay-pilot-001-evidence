@@ -1,0 +1,23 @@
+--- a/finding_b04.py	2026-09-15 00:27:04
++++ b/finding_b04.py	2026-09-15 00:34:52
+@@ -17,6 +17,11 @@
+ app = Flask(__name__)
+ 
+ 
++def _compose(mid):
++    base = "SELECT id, name, city, joined FROM members WHERE id = "
++    return base + mid
++
++
+ def get_connection():
+     conn = sqlite3.connect(DB_PATH)
+     conn.row_factory = sqlite3.Row
+@@ -31,7 +36,7 @@
+     conn = get_connection()
+     cur = conn.cursor()
+ 
+-    query = f"SELECT id, name, city, joined FROM members WHERE id = {mid}"
++    query = _compose(mid)
+     rows = cur.execute(query).fetchall()
+     conn.close()
+ 

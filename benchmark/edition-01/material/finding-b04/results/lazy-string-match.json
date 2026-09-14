@@ -1,0 +1,202 @@
+{
+  "finding": "finding-b04",
+  "tool": "lazy-string-match",
+  "date": "2026-09-15",
+  "scanner": "Semgrep OSS 1.90.0 (vendored CWE-89 rule)",
+  "patch_file": "../../../private/tmp/claude-502/-Users-mc-assay-pilot-001/7668285f-2dc8-431d-8ccb-55f870d8b4af/scratchpad/patched/finding_b04.lazy-string-match.py",
+  "checks": {
+    "A_alert_closed": {
+      "pass": false,
+      "semgrep_findings_after": 1
+    },
+    "B_hole_shut": {
+      "pass": false,
+      "attacks_fired": 10,
+      "successful_attacks": 10,
+      "detail": [
+        {
+          "id": "a02",
+          "class": "boolean",
+          "payload": "1 OR 1=1",
+          "status": 200,
+          "count": 5,
+          "succeeded": true
+        },
+        {
+          "id": "a03",
+          "class": "boolean",
+          "payload": "0 OR id>0",
+          "status": 200,
+          "count": 5,
+          "succeeded": true
+        },
+        {
+          "id": "a04",
+          "class": "boolean",
+          "payload": "-1 OR 1=1",
+          "status": 200,
+          "count": 5,
+          "succeeded": true
+        },
+        {
+          "id": "a05",
+          "class": "boolean",
+          "payload": "99 OR 1=1",
+          "status": 200,
+          "count": 5,
+          "succeeded": true
+        },
+        {
+          "id": "a06",
+          "class": "union",
+          "payload": "0 UNION SELECT id, username, pw_hash, role FROM staff-- ",
+          "status": 200,
+          "count": 2,
+          "succeeded": true
+        },
+        {
+          "id": "a07",
+          "class": "union",
+          "payload": "0 UNION SELECT id, email, role, username FROM staff-- ",
+          "status": 200,
+          "count": 2,
+          "succeeded": true
+        },
+        {
+          "id": "a08",
+          "class": "union",
+          "payload": "-1 UNION SELECT id, pw_hash, username, role FROM staff-- ",
+          "status": 200,
+          "count": 2,
+          "succeeded": true
+        },
+        {
+          "id": "a09",
+          "class": "schema-disclosure",
+          "payload": "0 UNION SELECT 1, sql, 3, 4 FROM sqlite_master WHERE type='table'-- ",
+          "status": 200,
+          "count": 5,
+          "succeeded": true
+        },
+        {
+          "id": "a10",
+          "class": "schema-disclosure",
+          "payload": "0 UNION SELECT 1, name, 3, 4 FROM sqlite_master-- ",
+          "status": 200,
+          "count": 5,
+          "succeeded": true
+        },
+        {
+          "id": "a11",
+          "class": "schema-disclosure",
+          "payload": "0 UNION SELECT 1, sql, 3, 4 FROM sqlite_master WHERE name='staff'-- ",
+          "status": 200,
+          "count": 1,
+          "succeeded": true
+        }
+      ]
+    },
+    "C_behaviour_preserved": {
+      "pass": true,
+      "benign_fired": 11,
+      "regressions": 0,
+      "detail": [
+        {
+          "id": "b01",
+          "input": "1",
+          "expected_status": 200,
+          "got_status": 200,
+          "body_match": true,
+          "regression": false
+        },
+        {
+          "id": "b02",
+          "input": "2",
+          "expected_status": 200,
+          "got_status": 200,
+          "body_match": true,
+          "regression": false
+        },
+        {
+          "id": "b03",
+          "input": "3",
+          "expected_status": 200,
+          "got_status": 200,
+          "body_match": true,
+          "regression": false
+        },
+        {
+          "id": "b04",
+          "input": "4",
+          "expected_status": 200,
+          "got_status": 200,
+          "body_match": true,
+          "regression": false
+        },
+        {
+          "id": "b05",
+          "input": "5",
+          "expected_status": 200,
+          "got_status": 200,
+          "body_match": true,
+          "regression": false
+        },
+        {
+          "id": "b06",
+          "input": "0",
+          "expected_status": 200,
+          "got_status": 200,
+          "body_match": true,
+          "regression": false
+        },
+        {
+          "id": "b07",
+          "input": "6",
+          "expected_status": 200,
+          "got_status": 200,
+          "body_match": true,
+          "regression": false
+        },
+        {
+          "id": "b08",
+          "input": "99",
+          "expected_status": 200,
+          "got_status": 200,
+          "body_match": true,
+          "regression": false
+        },
+        {
+          "id": "b09",
+          "input": "-1",
+          "expected_status": 200,
+          "got_status": 200,
+          "body_match": true,
+          "regression": false
+        },
+        {
+          "id": "b10",
+          "input": "007",
+          "expected_status": 200,
+          "got_status": 200,
+          "body_match": true,
+          "regression": false
+        },
+        {
+          "id": "b11",
+          "input": "10",
+          "expected_status": 200,
+          "got_status": 200,
+          "body_match": true,
+          "regression": false
+        }
+      ]
+    },
+    "D_no_suppression": {
+      "pass": true,
+      "explicit_markers": [],
+      "suppression_in_effect": false
+    }
+  },
+  "failure_class": "string-match",
+  "verdict": "NOT VERIFIED"
+}
