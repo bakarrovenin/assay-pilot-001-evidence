@@ -136,8 +136,14 @@ fails, check DNS (step 9) resolved first.
 
 ### 11. Lock the service to the site origin
 
-Tell the service to accept browser calls only from the real site, and to read
-the visitor's address from Caddy:
+The shipped `assay-benchmark.service` unit already sets both of these, so if you
+used it unchanged in step 8 you can skip this step. Do it only if you need a
+different origin (for example a staging domain). To confirm what is in effect:
+
+    systemctl show assay-benchmark -p Environment | tr ' ' '\n' | grep ASSAY_
+
+To override, tell the service to accept browser calls only from the real site,
+and to read the visitor's address from Caddy:
 
     systemctl edit assay-benchmark
 
@@ -154,22 +160,31 @@ Then restart and re-check:
 
 **Worked when:** health returns `{"ok": true, ...}` again.
 
-### 12. Tell the site where the service is
+### 12. Tell the site where the service is, and turn scoring on
 
-The website needs one build variable so its benchmark pages call your service.
-In the site's Vercel project, under Settings, Environment Variables, add:
+The website needs **two** build variables. The first points its benchmark pages
+at your service; the second flips the submit step from the "notify me when
+scoring opens" waitlist to the live Score form. Both are needed: with only the
+first, the leaderboard reads from your service but the page still shows the
+waitlist.
+
+In the site's Vercel project, under Settings, Environment Variables, add both:
 
 - Name **PUBLIC_BENCHMARK_API**, Value **https://benchmark-api.example.com**
+- Name **PUBLIC_BENCHMARK_SCORING**, Value **1**
 
 Then redeploy the site (Vercel, Deployments, Redeploy). If you build the site by
-hand instead, set it on the build command:
+hand instead, set both on the build command:
 
-    PUBLIC_BENCHMARK_API=https://benchmark-api.example.com npm run build
+    PUBLIC_BENCHMARK_API=https://benchmark-api.example.com \
+      PUBLIC_BENCHMARK_SCORING=1 npm run build
 
 **Worked when:** open `https://assay.website/benchmark/`, pick a finding, paste a
 patch, and click Score. After a few seconds you land on a result page with a
 verdict. That means the browser reached your service, the service scored the
-patch in a container, and the result came back.
+patch in a container, and the result came back. (If the page still shows a
+waitlist button instead of a patch box, the redeploy has not picked up
+`PUBLIC_BENCHMARK_SCORING=1` yet.)
 
 ---
 
