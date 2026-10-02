@@ -1,0 +1,17 @@
+[Unit]
+Description=Back up Assay score and feedback database to S3
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=assay
+Group=docker
+EnvironmentFile=/etc/assay-results-backup.env
+Environment=ASSAY_BENCHMARK_DB=/opt/assay-benchmark-data/results.db
+ExecStart=/usr/local/bin/assay-results-backup
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadOnlyPaths=/opt/assay-benchmark-data

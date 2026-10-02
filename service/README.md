@@ -8,6 +8,7 @@ hands the harness a benchmark finding and a patch, under resource caps, and
 translates the evidence artifact into the shape the front end renders.
 
     POST /score        {finding, patch, tool, version} -> verdict + checks
+    POST /feedback     {result_id, rating, message} -> saved voluntary feedback
     GET  /leaderboard  server-side aggregate, recounted from stored rows
     GET  /result/{id}  one stored result
     GET  /healthz      liveness, and whether the scorer image is present
@@ -31,6 +32,9 @@ The patch runs only inside the scoring container the harness creates:
   so the harness can tar it into the container, then deleted; the database
   stores the tool, version, verdict, failure class, the four checks and a
   timestamp, never the patch text.
+- voluntary result ratings and optional comments are stored in the `feedback`
+  table, linked to a score ID; comments are capped at 1,000 characters, and
+  client IPs are used only by an in-memory rate limiter, never persisted.
 
 ## What infrastructure this needs
 
@@ -44,28 +48,28 @@ Docker containers with `--network none` and resource caps, which nested
 container runtimes either forbid or make fragile. A plain VM with Docker is the
 simplest thing that is not a laptop.
 
-### Recommended: one small VM
+### Recommended: one dedicated AWS VM
 
-| Provider | Instance | vCPU / RAM | ~cost / month |
+| Provider | Instance | vCPU / RAM | Notes |
 |---|---|---|---|
-| **Hetzner Cloud** (recommended) | CX22 | 2 / 4 GB | ~4.50 EUR (~5 USD) |
-| DigitalOcean | Basic droplet | 2 / 4 GB | ~24 USD |
-| AWS Lightsail | 2 GB plan | 2 / 2 GB | ~12 USD |
-| Fly.io | shared-cpu-1x, 1 GB | 1 / 1 GB | ~4-6 USD (Docker-in-Docker needs a privileged setup; the VM options above are simpler) |
+| **AWS EC2, ap-southeast-2** | t3.medium | 2 / 4 GB | Dedicated host, encrypted gp3 disk, Session Manager, Caddy HTTPS |
 
 2 vCPU / 4 GB is comfortable: scoring is single-flight and a run uses under
 768 MB and one core for a few seconds. 2 GB works; 4 GB gives headroom for the
 scanner. Disk: 20-40 GB (the scorer image plus SQLite). Egress is negligible.
 
-**Bottom line: about 5 USD a month on Hetzner**, more on the US clouds. Nothing
-scales with traffic except that heavy load queues behind the single-flight
-lock and returns 429, which is the intended back-pressure rather than a bigger
-bill.
+See `AWS-DEPLOYMENT.md` for the account-specific layout. AWS pricing depends on
+region and credits; check EC2, EBS, IPv4, snapshot and transfer charges in the
+AWS calculator before launch. Nothing scales with traffic except that heavy
+load queues behind the single-flight lock and returns 429, rather than creating
+extra instances.
 
 ## Deploy
 
 DEPLOY-CHECKLIST.md is the step-by-step version to follow on the day, with a
 success check after every step. The summary below is the same path in brief.
+For AWS-specific access, billing, backup and instance settings, start with
+`AWS-DEPLOYMENT.md`.
 
 On a fresh Ubuntu VM (as root, then a service user):
 
@@ -111,9 +115,14 @@ Smoke test:
 | `ASSAY_ALLOWED_ORIGINS` | `https://assay.website,http://localhost:4321` | CORS allow-list |
 | `ASSAY_TRUST_PROXY` | unset | read client IP from `X-Forwarded-For` when behind a proxy |
 | `ASSAY_RATE_PER_HOUR` | `12` | per-IP score limit |
+| `ASSAY_FEEDBACK_RATE_PER_HOUR` | `5` | per-IP feedback limit |
 | `ASSAY_MAX_WAITERS` | `3` | requests admitted to the scoring stage before 429 |
 | `ASSAY_MAX_PATCH_BYTES` | `65536` | max patch size |
 | `ASSAY_BENCHMARK_DB` | `service/results.db` | SQLite path |
+
+Score metadata is in `results`; voluntary ratings/comments are in `feedback`.
+To inspect feedback from the host, query the SQLite database directly; there is
+no public feedback export endpoint.
 
 ## Rotating the corpus
 

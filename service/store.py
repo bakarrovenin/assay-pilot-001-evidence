@@ -48,6 +48,18 @@ def init():
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS feedback (
+                id         TEXT PRIMARY KEY,
+                result_id  TEXT,
+                rating     TEXT NOT NULL,
+                message    TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                FOREIGN KEY(result_id) REFERENCES results(id)
+            )
+            """
+        )
 
 
 def save(result, edition):
@@ -97,6 +109,24 @@ def get(rid):
         "date": row["created_at"][:10],
         "scorer": "pilot-001-harness",
     }
+
+
+def save_feedback(result_id, rating, message):
+    """Save voluntary feedback without retaining network identifiers or patches."""
+    fid = uuid.uuid4().hex
+    created = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    with _lock, _conn() as conn:
+        conn.execute(
+            "INSERT INTO feedback (id, result_id, rating, message, created_at) "
+            "VALUES (?,?,?,?,?)",
+            (fid, result_id, rating, message, created),
+        )
+    return fid, created
+
+
+def result_exists(rid):
+    with _conn() as conn:
+        return conn.execute("SELECT 1 FROM results WHERE id = ?", (rid,)).fetchone() is not None
 
 
 def _tally(rows):

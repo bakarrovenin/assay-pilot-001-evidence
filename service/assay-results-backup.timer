@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily backup of Assay score and feedback database
+
+[Timer]
+OnCalendar=*-*-* 03:17:00 UTC
+RandomizedDelaySec=10m
+Persistent=true
+
+[Install]
+WantedBy=timers.target

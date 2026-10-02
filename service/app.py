@@ -42,6 +42,7 @@ ALLOWED_ORIGINS = [
 ]
 TRUST_PROXY = os.environ.get("ASSAY_TRUST_PROXY") == "1"
 RATE_PER_HOUR = int(os.environ.get("ASSAY_RATE_PER_HOUR", "12"))
+FEEDBACK_RATE_PER_HOUR = int(os.environ.get("ASSAY_FEEDBACK_RATE_PER_HOUR", "5"))
 MAX_WAITERS = int(os.environ.get("ASSAY_MAX_WAITERS", "3"))
 MAX_PATCH_BYTES = int(os.environ.get("ASSAY_MAX_PATCH_BYTES", str(64 * 1024)))
 
@@ -61,6 +62,7 @@ def _startup():
 
 # ---- per-IP rate limit, fixed 1h window, in memory -------------------------
 _hits = defaultdict(deque)
+_feedback_hits = defaultdict(deque)
 
 
 def _client_ip(request: Request) -> str:
@@ -71,12 +73,12 @@ def _client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
-def _rate_ok(ip: str) -> bool:
+def _rate_ok(ip: str, limit: int = RATE_PER_HOUR, hits=_hits) -> bool:
     now = time.time()
-    q = _hits[ip]
+    q = hits[ip]
     while q and now - q[0] > 3600:
         q.popleft()
-    if len(q) >= RATE_PER_HOUR:
+    if len(q) >= limit:
         return False
     q.append(now)
     return True
@@ -114,6 +116,12 @@ class ScoreRequest(BaseModel):
     patch: str = Field(min_length=1)
     tool: str = Field(min_length=1, max_length=80)
     version: str = Field(min_length=1, max_length=80)
+
+
+class FeedbackRequest(BaseModel):
+    result_id: str = Field(min_length=32, max_length=32)
+    rating: str = Field(pattern="^(useful|not_useful)$")
+    message: str = Field(default="", max_length=1000)
 
 
 @app.get("/healthz")
@@ -172,3 +180,18 @@ async def score(req: ScoreRequest, request: Request):
 
     rid, created = store.save(result, scorer.EDITION)
     return {"id": rid, "created_at": created, "result": result}
+
+
+@app.post("/feedback")
+async def feedback(req: FeedbackRequest, request: Request):
+    """Store voluntary result feedback; never accepts or stores patch contents."""
+    ip = _client_ip(request)
+    if not _rate_ok(ip, FEEDBACK_RATE_PER_HOUR, _feedback_hits):
+        return JSONResponse(
+            {"error": "feedback rate limit: %d submissions per hour" % FEEDBACK_RATE_PER_HOUR},
+            status_code=429,
+        )
+    if not store.result_exists(req.result_id):
+        return JSONResponse({"error": "unknown result"}, status_code=404)
+    fid, created = store.save_feedback(req.result_id, req.rating, req.message.strip())
+    return {"id": fid, "created_at": created}

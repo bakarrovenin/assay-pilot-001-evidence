@@ -4,6 +4,10 @@ Follow this top to bottom, once. Each step has the exact command to paste and a
 line telling you how to know it worked before you move on. If a check does not
 match, stop on that step rather than continuing.
 
+For AWS, read `AWS-DEPLOYMENT.md` first: it has the account-specific region,
+instance sizing, security-group, SSM, backup, and billing settings. Do not reuse
+other EC2 instances or their security groups.
+
 Two things to have ready before you start:
 
 - a domain you control, so you can add a DNS record. This guide uses
@@ -18,9 +22,11 @@ also fine to run as `root` (sudo just does nothing extra there).
 
 ### 1. Create the VM
 
-On Hetzner Cloud (cheapest, ~5 USD/month): create a server, image **Ubuntu
-24.04**, type **CX22** (2 vCPU, 4 GB). Add your SSH key when it asks. Any
-provider works; you just need Ubuntu and 2 vCPU / 4 GB.
+In AWS `ap-southeast-2`, create a dedicated **Ubuntu 24.04** EC2 instance of
+type **t3.small** (2 vCPU, 2 GB). Use an encrypted 30 GiB gp3 root disk, attach
+an SSM role with `AmazonSSMManagedInstanceCore`, and create a new security group
+with only TCP 80 and 443 open to the Internet. Do not add inbound SSH or expose
+ports 8080/2375. Tag it `Project=Assay` and `Name=assay-benchmark-api`.
 
 Write down the server's **public IP address**. You will use it twice.
 
@@ -28,11 +34,13 @@ Write down the server's **public IP address**. You will use it twice.
 
 ### 2. Log in
 
-From your laptop terminal, replacing the IP:
+Use **EC2 → Connect → Session Manager**. In the session, become root:
 
-    ssh root@YOUR.SERVER.IP
+    sudo -i
 
-**Worked when:** the prompt changes to something ending in `#`.
+**Worked when:** the prompt changes to something ending in `#`. If Session
+Manager is unavailable, stop and fix the instance role/SSM setup; do not open
+SSH to the world as a workaround.
 
 ### 3. Install Docker
 
@@ -41,6 +49,17 @@ From your laptop terminal, replacing the IP:
 **Worked when:** this prints a version:
 
     docker --version
+
+Add 2 GiB of host swap for the one-time image build and operating-system
+headroom. This does not change the scorer container's separate memory/swap cap:
+
+    fallocate -l 2G /swapfile
+    chmod 600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile
+    echo '/swapfile none swap sw 0 0' >> /etc/fstab
+
+**Worked when:** `free -h` shows about 2 GiB of swap.
 
 ### 4. Make the service user and its data folder
 
@@ -96,6 +115,26 @@ prints `OK`.
 
 If it does not, read the log with `journalctl -u assay-benchmark -n 40` and stop
 here.
+
+### 8a. Turn on durable database backups
+
+Follow the bucket and restricted instance-role steps in `AWS-DEPLOYMENT.md`.
+Then install the systemd units and configure the bucket prefix:
+
+    apt install -y sqlite3 awscli
+    install -m 0755 /opt/assay-pilot-001/service/backup-results-to-s3.sh /usr/local/bin/assay-results-backup
+    install -m 0644 /opt/assay-pilot-001/service/assay-results-backup.service /etc/systemd/system/
+    install -m 0644 /opt/assay-pilot-001/service/assay-results-backup.timer /etc/systemd/system/
+    printf '%s\n' 'ASSAY_BACKUP_S3_URI=s3://YOUR-PRIVATE-BUCKET/daily' > /etc/assay-results-backup.env
+    chmod 0644 /etc/assay-results-backup.env
+    systemctl daemon-reload
+    systemctl enable --now assay-results-backup.timer
+    systemctl start assay-results-backup.service
+
+**Worked when:** `systemctl status assay-results-backup.service` succeeds and
+the bucket shows a new `daily/results-*.db` object. The bucket must block
+public access and the instance role should have only `s3:PutObject` to this
+prefix.
 
 ### 9. Point your domain at the server (DNS)
 
@@ -197,6 +236,7 @@ waitlist button instead of a patch box, the redeploy has not picked up
 
 ## What this costs
 
-About 5 USD a month for the VM on Hetzner (more on the US clouds; see README).
-Nothing scales with traffic: heavy load queues behind the single scoring slot
-and returns "busy", rather than costing more.
+AWS charges vary by region and account credit eligibility. Check the current
+calculator estimate for EC2, EBS, public IPv4, snapshots, and transfer before
+launch. Nothing scales with traffic: heavy load queues behind the single
+scoring slot and returns "busy", rather than creating more compute instances.
